@@ -62,6 +62,11 @@ function dataEstesa(iso){
   const d = isoADate(iso);
   return `${GIORNI_FULL[d.getDay()]} ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
 }
+// Numerica: "12/07/2026"
+function dataNumerica(iso){
+  const [y,m,g] = iso.split("-");
+  return `${g}/${m}/${y}`;
+}
 // Stesso giorno/mese dell'anno precedente (gestisce il 29/02)
 function annoPrecedente(iso){
   const [y,m,g] = iso.split("-").map(Number);

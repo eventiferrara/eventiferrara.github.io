@@ -55,6 +55,21 @@ async function caricaPresenze(){
     PRESENZE = {};
     snap.forEach(d => { PRESENZE[d.id] = (d.data().giorni)||{}; });
   }catch(e){ console.error("Errore lettura presenze:", e); }
+  renderStatoPresenze();
+}
+
+// mostra, per ogni anno, fino a quale data le presenze sono caricate
+function renderStatoPresenze(){
+  const el = document.getElementById("presenze-stato");
+  if (!el) return;
+  const anni = Object.keys(PRESENZE).sort();
+  const parti = anni.map(a => {
+    const date = Object.keys(PRESENZE[a]||{}).sort();
+    return date.length ? `<b>${a}</b> fino al ${dataNumerica(date[date.length-1])}` : null;
+  }).filter(Boolean);
+  el.innerHTML = parti.length
+    ? "📌 Dati presenze caricati: " + parti.join(" · ")
+    : "⚠️ Nessun dato presenze ancora caricato.";
 }
 
 function getPresenza(iso){
@@ -450,6 +465,7 @@ async function caricaFilePresenze(){
       });
       PRESENZE[anno] = perAnno[anno];
     }
+    renderStatoPresenze();
     mostraEsito(esito, `✓ Importate ${validi} giornate per gli anni: ${Object.keys(perAnno).join(", ")}.`, true);
   }catch(err){ console.error(err); mostraEsito(esito,"Errore: "+err.message,false); }
 }
