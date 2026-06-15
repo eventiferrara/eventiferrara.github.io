@@ -67,19 +67,18 @@ PIANO.md                      il piano approvato
 4. `TELEGRAM_CHAT_ID` = lo username del canale, es. `@EVENTIFERRARA`.
 
 ### 4) GitHub
-1. Crea il repo (es. `github.com/zenogovoni-art/eventi-ferrara`) e carica questi file.
-2. **Settings → Secrets and variables → Actions → New repository secret**, aggiungi:
+Repo: **`github.com/eventiferrara/eventiferrara.github.io`** (organizzazione `eventiferrara`).
+1. **Settings → Secrets and variables → Actions → New repository secret**, aggiungi:
    - `FIREBASE_SERVICE_ACCOUNT` → contenuto del file JSON del **service account**
      (Firebase → Impostazioni progetto → **Account di servizio** → *Genera nuova chiave privata*;
      incolla TUTTO il JSON).
    - `TELEGRAM_TOKEN` → token del bot.
    - `TELEGRAM_CHAT_ID` → `@EVENTIFERRARA`.
-3. **Settings → Pages**: Source = `Deploy from a branch`, branch `main`, cartella `/ (root)`.
-   La webapp sarà su `https://zenogovoni-art.github.io/eventi-ferrara/`.
+2. **Pages** è già attiva: la webapp è su **`https://eventiferrara.github.io/`**.
 
 ### 5) cron-job.org (come gli altri progetti)
 Crea un job che ogni ~15 min chiama l'API di GitHub per lanciare il workflow:
-- URL: `https://api.github.com/repos/zenogovoni-art/eventi-ferrara/actions/workflows/notifica.yml/dispatches`
+- URL: `https://api.github.com/repos/eventiferrara/eventiferrara.github.io/actions/workflows/notifica.yml/dispatches`
 - Metodo: **POST**, body: `{"ref":"main"}`
 - Header: `Authorization: Bearer <TOKEN_GITHUB_FINE_GRAINED>` (permesso *Actions: read+write* su questo repo),
   `Accept: application/vnd.github+json`
