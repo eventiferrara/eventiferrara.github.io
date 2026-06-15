@@ -448,10 +448,11 @@ async function caricaFilePresenze(){
     let validi=0;
     righe.forEach(r => {
       const iso = parseDataCella(r[0]);
-      const val = Number(String(r[1]).replace(/[^\d.-]/g,""));
-      if (iso && !isNaN(val)){
+      // celle presenze vuote => giorno SENZA dato: si salta (non si salva 0)
+      const pulito = (r[1]===null||r[1]===undefined ? "" : String(r[1])).replace(/[^\d.-]/g,"");
+      if (iso && pulito !== "" && !isNaN(Number(pulito))){
         const anno = iso.slice(0,4);
-        (perAnno[anno]=perAnno[anno]||{})[iso]=val;
+        (perAnno[anno]=perAnno[anno]||{})[iso]=Number(pulito);
         validi++;
       }
     });
