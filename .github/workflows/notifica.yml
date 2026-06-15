@@ -1,0 +1,49 @@
+name: Snapshot + notifica eventi
+
+# Eseguito su richiesta (workflow_dispatch) — lanciato da cron-job.org ogni ~15 min,
+# come negli altri progetti (allerta-vento, scadenze). C'è anche un cron di riserva.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"   # riserva: ogni 30 min (lo schedule di GitHub può ritardare)
+
+# servono i permessi per committare lo snapshot/stato nel repo
+permissions:
+  contents: write
+
+concurrency:
+  group: notifica-eventi
+  cancel-in-progress: false
+
+jobs:
+  notifica:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installa dipendenze
+        run: pip install -r requirements.txt
+
+      - name: Snapshot + notifica
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python notifica_telegram.py
+
+      - name: Commit snapshot/stato se cambiati
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "Nessuna modifica da committare."
+          else
+            git commit -m "snapshot dati $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git pull --rebase origin ${GITHUB_REF_NAME} || true
+            git push
+          fi

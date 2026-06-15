@@ -1,0 +1,107 @@
+:root{
+  --primario:#0b6fb8;
+  --primario-scuro:#075a96;
+  --bg:#f4f6f9;
+  --bordo:#d8dee6;
+  --testo:#1f2a37;
+  --giallo:#f2c200;
+  --verde:#2faa3f;
+  --rosso:#e0413a;
+  --ombra:0 1px 3px rgba(0,0,0,.08);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--testo);line-height:1.45;
+}
+
+/* header */
+.topbar{background:var(--primario);color:#fff;padding:18px 20px}
+.topbar h1{margin:0;font-size:1.5rem}
+.sottotitolo{margin:4px 0 0;opacity:.92;font-size:.9rem}
+
+/* tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:4px;background:#fff;padding:8px 12px;border-bottom:1px solid var(--bordo);position:sticky;top:0;z-index:10}
+.tab{border:0;background:transparent;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:.95rem;color:var(--testo)}
+.tab:hover{background:#eef3f8}
+.tab.attiva{background:var(--primario);color:#fff}
+
+main{max-width:980px;margin:0 auto;padding:18px 16px 60px}
+
+/* pannelli */
+.pannello{display:none;animation:fade .2s ease}
+.pannello.attivo{display:block}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+h2{margin-top:0}
+.aiuto{color:#5b6b7c;font-size:.88rem}
+
+/* form */
+form label{display:block;margin:12px 0;font-weight:600;font-size:.9rem}
+input,select{width:100%;padding:10px;border:1px solid var(--bordo);border-radius:8px;font-size:1rem;margin-top:4px;background:#fff}
+input[type=radio]{width:auto;margin:0 6px 0 0}
+.riga2{display:flex;gap:12px;flex-wrap:wrap}
+.riga2 > label{flex:1;min-width:160px}
+small.aiuto{font-weight:400;display:block;margin-top:4px}
+
+button{cursor:pointer;border:0;border-radius:8px;padding:11px 16px;font-size:.95rem}
+.primario{background:var(--primario);color:#fff}
+.primario:hover{background:var(--primario-scuro)}
+.secondario{background:#e7edf3;color:var(--testo)}
+.secondario:hover{background:#d8e2ec}
+
+.esito{margin-top:10px;font-size:.9rem;min-height:1.2em}
+.esito.ok{color:var(--verde);font-weight:600}
+.esito.err{color:var(--rosso);font-weight:600}
+
+.avviso{background:#fff6da;border:1px solid var(--giallo);border-radius:8px;padding:10px 12px;margin:10px 0;font-size:.9rem}
+.avviso button{margin-top:8px}
+.nascosto{display:none}
+
+/* calendario */
+.filtri{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.filtri label{font-weight:600;font-size:.85rem}
+.filtri input{width:auto}
+.legenda{font-size:.85rem;color:#5b6b7c}
+.pallino{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin:0 2px 0 8px}
+.pallino.basso{background:var(--giallo)}
+.pallino.medio{background:var(--verde)}
+.pallino.alto{background:var(--rosso)}
+
+.tabella-wrap{overflow:auto;max-height:65vh;border:1px solid var(--bordo);border-radius:10px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:9px 12px;border-bottom:1px solid var(--bordo);text-align:left;vertical-align:top}
+thead th{position:sticky;top:0;background:#eef3f8;z-index:1}
+.col-data{white-space:nowrap;width:140px}
+tr.festivo{background:#fff9ea}
+tr.weekend td.col-data{color:var(--primario);font-weight:600}
+.ev-riga{display:flex;align-items:center;gap:6px;margin:2px 0}
+.ev-nome{font-weight:600}
+.ev-meta{color:#5b6b7c;font-size:.82rem}
+
+/* analisi */
+.card-analisi{background:#fff;border:1px solid var(--bordo);border-radius:12px;padding:16px;margin:16px 0;box-shadow:var(--ombra)}
+.card-analisi h3{margin-top:0}
+.scelta-confronto{display:flex;gap:18px;margin:10px 0}
+.scelta-confronto label{font-weight:500}
+.lista-eventi{width:100%;margin-top:6px}
+.risultato{margin-top:14px}
+.grafico-wrap{margin-top:14px;position:relative;height:340px}
+
+.tab-diff{width:100%;border-collapse:collapse;margin-top:8px;font-size:.9rem}
+.tab-diff th,.tab-diff td{border:1px solid var(--bordo);padding:6px 10px;text-align:right}
+.tab-diff th:first-child,.tab-diff td:first-child{text-align:left}
+.diff-pos{color:var(--verde);font-weight:600}
+.diff-neg{color:var(--rosso);font-weight:600}
+
+/* admin */
+.barra-admin{display:flex;justify-content:space-between;align-items:center;background:#eef3f8;padding:10px 14px;border-radius:8px;margin-bottom:8px}
+#tabella-admin-eventi td button{padding:5px 9px;font-size:.8rem;background:#fde2e0;color:var(--rosso)}
+#tabella-admin-eventi td .modifica{background:#e7edf3;color:var(--testo);margin-right:4px}
+
+footer{text-align:center;color:#8a98a6;padding:20px;font-size:.8rem}
+
+@media(max-width:560px){
+  .riga2{flex-direction:column;gap:0}
+  .tab{flex:1;text-align:center;font-size:.82rem;padding:8px}
+}

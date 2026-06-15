@@ -1,0 +1,2 @@
+# Questa cartella conterrà snapshot.json (backup versionato) e notificati.json (stato).
+# Vengono creati/aggiornati automaticamente dalla GitHub Action.

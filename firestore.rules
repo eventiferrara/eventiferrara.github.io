@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// ============================================================================
+//  SECURITY RULES — Firestore
+//  Da incollare in: Console Firebase -> Firestore Database -> scheda "Regole".
+//  PRIMA sostituisci dcpdJI6DB2TReOjEorr5EWER8na2 con il tuo UID utente (lo trovi in
+//  Authentication -> Utenti -> colonna "UID utente").
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == 'dcpdJI6DB2TReOjEorr5EWER8na2';
+    }
+
+    // validazione minima di un evento inserito dal pubblico
+    function eventoValido(d) {
+      return d.dataInizio is string
+        && d.dataFine is string
+        && d.dataInizio <= d.dataFine
+        && d.nome is string && d.nome.size() > 0 && d.nome.size() <= 200
+        && d.struttura is string && d.struttura.size() <= 120
+        && d.tipologia is string
+        && d.previsione is string;
+    }
+
+    // EVENTI: lettura pubblica, creazione pubblica (validata),
+    //         modifica/eliminazione solo admin.
+    match /eventi/{id} {
+      allow read:   if true;
+      allow create: if eventoValido(request.resource.data);
+      allow update, delete: if isAdmin();
+    }
+
+    // PRESENZE: lettura pubblica (serve all'analisi), scrittura solo admin.
+    match /presenze/{anno} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+  }
+}

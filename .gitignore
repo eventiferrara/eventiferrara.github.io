@@ -1,0 +1,7 @@
+.DS_Store
+# file dati reali di esempio: non pubblicarli nel repo
+esempi/
+# non committare MAI il file del service account in chiaro
+serviceAccount*.json
+firebase-service-account*.json
+*.local

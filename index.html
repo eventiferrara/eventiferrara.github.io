@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eventi Ferrara — Calendario per operatori turistici</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <h1>📅 Eventi Ferrara</h1>
+    <p class="sottotitolo">Calendario condiviso degli eventi in città — al servizio di albergatori e operatori turistici</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab attiva" data-tab="inserisci">➕ Inserisci evento</button>
+    <button class="tab" data-tab="calendario">📆 Calendario eventi</button>
+    <button class="tab" data-tab="analisi">📊 Analisi presenze/evento</button>
+    <button class="tab" data-tab="admin">🔐 Amministratore</button>
+  </nav>
+
+  <main>
+
+    <!-- ============================ INSERISCI EVENTO ============================ -->
+    <section id="tab-inserisci" class="pannello attivo">
+      <h2>Inserisci un evento</h2>
+      <p class="aiuto">Ogni operatore può arricchire il calendario con gli eventi che conosce. Compila i campi e salva.</p>
+
+      <form id="form-evento" autocomplete="off">
+        <div class="riga2">
+          <label>Data inizio
+            <input type="date" id="ev-inizio" required />
+          </label>
+          <label>Data fine
+            <input type="date" id="ev-fine" required />
+          </label>
+        </div>
+
+        <label>Nome evento (in MAIUSCOLO)
+          <input type="text" id="ev-nome" list="nomi-esistenti" required
+                 placeholder="ES: FERRARA SUMMER FESTIVAL – nome artista" />
+          <datalist id="nomi-esistenti"></datalist>
+          <small class="aiuto">Suggerimenti: "FERRARA SUMMER FESTIVAL – nome artista", "PALAZZO DEI DIAMANTI – nome mostra"</small>
+        </label>
+
+        <div class="riga2">
+          <label>Tipologia evento
+            <select id="ev-tipologia" required>
+              <option value="">— scegli —</option>
+              <option value="culturale_musicale">Culturale / musicale</option>
+              <option value="congressuale_fieristico">Congressuale / fieristico</option>
+              <option value="sportivo">Sportivo</option>
+            </select>
+          </label>
+
+          <label>Previsione presenze turistiche
+            <select id="ev-previsione" required>
+              <option value="">— scegli —</option>
+              <option value="basso">🟡 Basso</option>
+              <option value="medio">🟢 Medio</option>
+              <option value="alto">🔴 Alto</option>
+            </select>
+          </label>
+        </div>
+
+        <label>Struttura / operatore che inserisce
+          <input type="text" id="ev-struttura" required placeholder="ES: Hotel Annunziata" />
+        </label>
+
+        <div id="avviso-duplicato" class="avviso nascosto"></div>
+
+        <button type="submit" class="primario">💾 Salva evento</button>
+        <div id="esito-inserimento" class="esito"></div>
+      </form>
+    </section>
+
+    <!-- ============================ CALENDARIO ============================ -->
+    <section id="tab-calendario" class="pannello">
+      <h2>Calendario eventi</h2>
+
+      <div class="filtri">
+        <label>Dal
+          <input type="date" id="cal-da" />
+        </label>
+        <label>Al
+          <input type="date" id="cal-a" />
+        </label>
+        <button id="cal-cerca" class="secondario">🔍 Cerca per data</button>
+        <button id="cal-reset" class="secondario">↺ Mostra prossimi</button>
+      </div>
+
+      <p class="legenda">
+        Legenda previsione presenze:
+        <span class="pallino basso"></span> basso
+        <span class="pallino medio"></span> medio
+        <span class="pallino alto"></span> alto
+        &nbsp;·&nbsp; 🎉 = festività
+      </p>
+
+      <div class="tabella-wrap">
+        <table id="tabella-calendario">
+          <thead>
+            <tr><th class="col-data">Data</th><th>Eventi</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================ ANALISI ============================ -->
+    <section id="tab-analisi" class="pannello">
+      <h2>Analisi presenze / evento</h2>
+      <p class="aiuto">Confronta le presenze turistiche giornaliere tra periodi diversi o rispetto a un evento.</p>
+
+      <!-- ANALISI 1 -->
+      <div class="card-analisi">
+        <h3>1 · Confronto con differenze giorno per giorno</h3>
+        <div class="riga2">
+          <label>Periodo A — dal <input type="date" id="a1-da" /></label>
+          <label>al <input type="date" id="a1-a" /></label>
+        </div>
+
+        <div class="scelta-confronto">
+          <label><input type="radio" name="a1-modo" value="annoprec" checked /> Stesso periodo, anno precedente</label>
+          <label><input type="radio" name="a1-modo" value="periodo" /> Confronta con un altro periodo</label>
+          <label><input type="radio" name="a1-modo" value="evento" /> Confronta con un evento</label>
+        </div>
+
+        <div id="a1-box-periodo" class="riga2">
+          <label>Periodo B — dal <input type="date" id="a1b-da" /></label>
+          <label>al <input type="date" id="a1b-a" /></label>
+        </div>
+
+        <div id="a1-box-evento" class="nascosto">
+          <label>Cerca evento per nome
+            <input type="text" id="a1-evento-cerca" placeholder="Scrivi parte del nome…" />
+          </label>
+          <select id="a1-evento-lista" size="5" class="lista-eventi"></select>
+        </div>
+
+        <button id="a1-confronta" class="primario">📋 Confronta</button>
+        <div id="a1-risultato" class="risultato"></div>
+      </div>
+
+      <!-- ANALISI 2 -->
+      <div class="card-analisi">
+        <h3>2 · Istogramma di confronto presenze</h3>
+        <div class="riga2">
+          <label>Periodo A — dal <input type="date" id="a2-da" /></label>
+          <label>al <input type="date" id="a2-a" /></label>
+        </div>
+
+        <div class="scelta-confronto">
+          <label><input type="radio" name="a2-modo" value="annoprec" checked /> Stesso periodo, anno precedente</label>
+          <label><input type="radio" name="a2-modo" value="periodo" /> Confronta con un altro periodo</label>
+          <label><input type="radio" name="a2-modo" value="evento" /> Confronta con un evento</label>
+        </div>
+
+        <div id="a2-box-periodo" class="riga2 nascosto">
+          <label>Periodo B — dal <input type="date" id="a2b-da" /></label>
+          <label>al <input type="date" id="a2b-a" /></label>
+        </div>
+
+        <div id="a2-box-evento" class="nascosto">
+          <label>Cerca evento per nome
+            <input type="text" id="a2-evento-cerca" placeholder="Scrivi parte del nome…" />
+          </label>
+          <select id="a2-evento-lista" size="5" class="lista-eventi"></select>
+        </div>
+
+        <button id="a2-confronta" class="primario">📊 Genera istogramma</button>
+        <div class="grafico-wrap"><canvas id="a2-grafico"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ============================ AMMINISTRATORE ============================ -->
+    <section id="tab-admin" class="pannello">
+      <h2>Area Amministratore</h2>
+
+      <!-- login -->
+      <div id="admin-login">
+        <p class="aiuto">Accesso riservato. Usa l'account amministratore (email e password).</p>
+        <form id="form-login">
+          <label>Email <input type="email" id="adm-email" required /></label>
+          <label>Password <input type="password" id="adm-password" required /></label>
+          <button type="submit" class="primario">Entra</button>
+          <div id="esito-login" class="esito"></div>
+        </form>
+      </div>
+
+      <!-- pannello admin (visibile solo dopo login) -->
+      <div id="admin-pannello" class="nascosto">
+        <div class="barra-admin">
+          <span id="admin-chi"></span>
+          <button id="admin-logout" class="secondario">Esci</button>
+        </div>
+
+        <div class="card-analisi">
+          <h3>Carica file PRESENZE_YYYY (Excel)</h3>
+          <p class="aiuto">Due colonne: <b>data</b> | <b>presenze</b>. Caricando lo stesso anno si <b>sovrascrive</b>.</p>
+          <input type="file" id="file-presenze" accept=".xlsx,.xls,.csv" />
+          <button id="carica-presenze" class="primario">⬆️ Importa presenze</button>
+          <div id="esito-presenze" class="esito"></div>
+        </div>
+
+        <div class="card-analisi">
+          <h3>Carica file EVENTI_YYYY (Excel o Word)</h3>
+          <p class="aiuto">Excel: <b>data</b> | <b>nome evento</b>. Word (.docx): righe con nome e date dell'evento.</p>
+          <input type="file" id="file-eventi" accept=".xlsx,.xls,.csv,.docx" />
+          <button id="carica-eventi" class="primario">⬆️ Importa eventi</button>
+          <div id="esito-eventi" class="esito"></div>
+        </div>
+
+        <div class="card-analisi">
+          <h3>Gestione eventi (modifica / elimina)</h3>
+          <input type="text" id="adm-filtro-eventi" placeholder="Filtra per nome…" />
+          <div class="tabella-wrap">
+            <table id="tabella-admin-eventi">
+              <thead><tr><th>Date</th><th>Nome</th><th>Tipo</th><th>Prev.</th><th>Struttura</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <small>Eventi Ferrara · dati salvati su Firebase · progetto a cura di Zeno</small>
+  </footer>
+
+  <!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <!-- Librerie -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.7.2/mammoth.browser.min.js"></script>
+
+  <!-- App -->
+  <script src="firebase-config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
