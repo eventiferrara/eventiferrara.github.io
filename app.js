@@ -79,6 +79,110 @@ function getPresenza(iso){
 }
 
 // ============================================================================
+//  PREVISIONE STORICA — stima dell'afflusso di un evento analizzando lo storico
+//  ----------------------------------------------------------------------------
+//  Misura il "lift" delle presenze nei giorni dell'evento rispetto alla baseline
+//  degli stessi giorni-settimana nelle ±4 settimane (isola stagione e weekend).
+//  Per un evento futuro lo aggancia per somiglianza di nome alle sue edizioni
+//  passate e media i loro lift. Solo lettura: non modifica nulla, è una stima
+//  che affianca la previsione manuale dell'operatore.
+// ============================================================================
+function liftEvento(dataInizio, dataFine){
+  const gg = intervalloDate(dataInizio, dataFine);
+  const ggSet = new Set(gg);
+  const vals = gg.map(getPresenza).filter(v => v != null);
+  if (!vals.length) return null;                    // nessun dato presenze nei giorni evento
+  const mediaEv = vals.reduce((a,b)=>a+b,0) / vals.length;
+
+  const basi = [];
+  for (const d of gg){
+    const vicini = [];
+    for (let k=-4; k<=4; k++){
+      if (k===0) continue;
+      const nd = addGiorni(d, 7*k);                 // stesso giorno-settimana, k settimane prima/dopo
+      if (ggSet.has(nd)) continue;                  // escludi i giorni dell'evento stesso
+      const p = getPresenza(nd);
+      if (p != null) vicini.push(p);
+    }
+    if (vicini.length) basi.push(vicini.reduce((a,b)=>a+b,0)/vicini.length);
+  }
+  if (!basi.length) return null;
+  const baseline = basi.reduce((a,b)=>a+b,0) / basi.length;
+  if (!baseline) return null;
+  return { lift: (mediaEv - baseline) / baseline * 100, ngg: vals.length };
+}
+
+// edizioni passate dello stesso evento: match deterministico sul "nome base"
+// (anno/edizione rimossi); fallback fuzzy stretto solo per i refusi.
+function trovaEdizioniPassate(nome, annoNuovo, idCorrente){
+  const candidati = EVENTI.filter(e =>
+    e.id !== idCorrente && Number(e.dataInizio.slice(0,4)) < annoNuovo);
+  if (!candidati.length) return [];
+  const base = nomeBase(nome);
+  let edizioni = candidati.filter(e => nomeBase(e.nome) === base);
+  if (!edizioni.length){                                  // nessun match esatto -> refusi
+    edizioni = candidati.filter(e => similNome(base, nomeBase(e.nome)) >= 0.88);
+  }
+  return edizioni;
+}
+
+// stima complessiva per un evento {nome, dataInizio, dataFine, id?}
+function previsioneStorica(ev){
+  const annoNuovo = Number(ev.dataInizio.slice(0,4));
+  const edizioni = trovaEdizioniPassate(ev.nome, annoNuovo, ev.id);
+  if (!edizioni.length) return { stato:"nessuno-storico" };
+
+  const usate = [];
+  for (const e of edizioni){
+    const r = liftEvento(e.dataInizio, e.dataFine);
+    if (r) usate.push({ ev:e, lift:r.lift, ngg:r.ngg, anno:Number(e.dataInizio.slice(0,4)) });
+  }
+  if (!usate.length) return { stato:"senza-dati" };
+
+  // media pesata: le edizioni più recenti pesano di più
+  let sw=0, swl=0;
+  for (const u of usate){ const w = 1/Math.max(1, annoNuovo-u.anno); sw+=w; swl+=w*u.lift; }
+  const lift = swl/sw;
+
+  // confidenza: più edizioni e più giorni con dati = stima più affidabile
+  const giorniTot = usate.reduce((a,u)=>a+u.ngg, 0);
+  let confidenza = "bassa";
+  if (usate.length>=3 || giorniTot>=10) confidenza = "alta";
+  else if (usate.length>=2 || giorniTot>=4) confidenza = "media";
+
+  const rif = usate.slice().sort((a,b)=>b.anno-a.anno)[0];   // edizione più recente
+  return { stato:"ok", lift, livello:classificaLift(lift), confidenza, nEdizioni:usate.length, rif };
+}
+
+// aggiorna il riquadro suggerimento sotto il campo "previsione"
+function aggiornaPrevisioneStorica(){
+  const box = document.getElementById("ev-prev-storica");
+  if (!box) return;
+  const nome = document.getElementById("ev-nome").value.trim();
+  const di   = document.getElementById("ev-inizio").value;
+  const df   = document.getElementById("ev-fine").value;
+  if (nome.length < 3 || !di || !df){ box.classList.add("nascosto"); box.innerHTML=""; return; }
+
+  const r = previsioneStorica({ nome:maiuscolo(nome), dataInizio:di, dataFine:df, id:EDIT_ID });
+  box.classList.remove("nascosto");
+  if (r.stato === "nessuno-storico"){
+    box.innerHTML = `📈 <b>Previsione storica:</b> <span class="ps-na">nessuno storico per questo evento — non calcolabile</span>`;
+    return;
+  }
+  if (r.stato === "senza-dati"){
+    box.innerHTML = `📈 <b>Previsione storica:</b> <span class="ps-na">edizioni passate trovate, ma senza dati presenze nei loro giorni</span>`;
+    return;
+  }
+  const P = PREVISIONI[r.livello];
+  const segno = r.lift>=0 ? "+" : "";
+  box.innerHTML = `
+    📈 <b>Previsione storica:</b>
+    <span class="pallino ${r.livello}"></span> <b>${P.label.toUpperCase()}</b>
+    <span class="ps-dett">(lift ${segno}${r.lift.toFixed(0)}% · ${r.nEdizioni} ediz. · confidenza ${r.confidenza})</span>
+    <div class="ps-rif">basato su: ${esc(r.rif.ev.nome)} ${r.rif.ev.dataInizio.slice(0,4)}</div>`;
+}
+
+// ============================================================================
 //  1) INSERISCI EVENTO
 // ============================================================================
 function initInserisci(){
@@ -91,6 +195,13 @@ function initInserisci(){
     const f = document.getElementById("ev-fine");
     f.min = e.target.value;
     if (!f.value || f.value < e.target.value) f.value = e.target.value;
+  });
+
+  // previsione storica calcolata: ricalcola al cambio di nome o date
+  ["ev-nome","ev-inizio","ev-fine"].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener("input", aggiornaPrevisioneStorica);
+    el.addEventListener("change", aggiornaPrevisioneStorica);
   });
 
   form.addEventListener("submit", onSalvaEvento);
@@ -180,6 +291,8 @@ function resetForm(){
   document.getElementById("ev-inizio").value = oggi;
   document.getElementById("ev-fine").value = oggi;
   document.getElementById("ev-fine").min = oggi;
+  const box = document.getElementById("ev-prev-storica");
+  if (box){ box.classList.add("nascosto"); box.innerHTML = ""; }
 }
 function annullaModifica(){
   EDIT_ID = null;
@@ -601,6 +714,7 @@ function modificaEvento(id){
   document.getElementById("ev-struttura").value = ev.struttura||"";
   document.querySelector("#form-evento button[type=submit]").textContent = "✏️ Aggiorna evento";
   document.querySelector("#tab-inserisci h2").textContent = "Modifica evento";
+  aggiornaPrevisioneStorica();
   mostraTab("inserisci");
   window.scrollTo(0,0);
 }

@@ -15,6 +15,45 @@ const PREVISIONI = {
   alto:  { label: "Alto",  colore: "#e0413a", emoji: "🔴" }
 };
 
+// Soglie (in % di "lift" sulle presenze) per la previsione storica calcolata.
+// Calibrate sui ~terzili della distribuzione dei lift degli eventi 2025.
+const SOGLIE_PREVISIONE = { basso: -8, alto: 10 };
+function classificaLift(lift){
+  if (lift >= SOGLIE_PREVISIONE.alto) return "alto";
+  if (lift <  SOGLIE_PREVISIONE.basso) return "basso";
+  return "medio";
+}
+
+// "Nome base" di un evento: rimuove anno ed edizione per riconoscere le ricorrenze
+// (es. "FERRARA BUSKERS FESTIVAL 2025" e "...2026" -> stesso base). Match deterministico.
+function nomeBase(n){
+  n = (n||"").toUpperCase();
+  n = n.replace(/\b(?:19|20)\d{2}\b/g, " ");                 // anni
+  n = n.replace(/\b\d{1,3}\s*[°^ªAaEe]?\s*EDIZIONE\b/g, " "); // "7A EDIZIONE", "5° EDIZIONE"
+  n = n.replace(/\b[IVXLC]+\s+EDIZIONE\b/g, " ");            // "XII EDIZIONE"
+  n = n.replace(/\b\d{1,3}[°^ª]\b/g, " ");                   // "27°", "9^"
+  n = n.replace(/[^A-ZÀÈÉÌÒÙ0-9 ]/g, " ");                   // punteggiatura/apostrofi
+  return n.replace(/\s+/g, " ").trim();
+}
+
+// Similarità 0..1 (Levenshtein normalizzato) per il fallback sui refusi.
+function similNome(a, b){
+  a = a||""; b = b||"";
+  if (a === b) return 1;
+  if (!a.length || !b.length) return 0;
+  const m = a.length, n = b.length;
+  let prev = Array.from({length:n+1}, (_,j)=>j), cur = new Array(n+1);
+  for (let i=1;i<=m;i++){
+    cur[0]=i;
+    for (let j=1;j<=n;j++){
+      const cost = a[i-1]===b[j-1] ? 0 : 1;
+      cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost);
+    }
+    [prev, cur] = [cur, prev];
+  }
+  return 1 - prev[n] / Math.max(m, n);
+}
+
 const MESI = ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
 const GIORNI = ["dom","lun","mar","mer","gio","ven","sab"];
 const GIORNI_FULL = ["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"];
