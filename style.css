@@ -61,6 +61,7 @@ button{cursor:pointer;border:0;border-radius:8px;padding:11px 16px;font-size:.95
 /* previsione storica calcolata (suggerimento sotto il campo previsione) */
 .prev-storica{background:#eef4fb;border:1px solid #cdddef;border-radius:8px;padding:8px 12px;margin:4px 0 12px;font-size:.88rem;line-height:1.5}
 .prev-storica .ps-dett{color:#5b6b7c}
+.prev-storica .ps-frase{margin-top:4px}
 .prev-storica .ps-rif{color:#5b6b7c;font-size:.82rem;margin-top:2px}
 .prev-storica .ps-na{color:#8a97a5;font-style:italic}
 

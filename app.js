@@ -79,13 +79,14 @@ function getPresenza(iso){
 }
 
 // ============================================================================
-//  PREVISIONE STORICA — stima dell'afflusso di un evento analizzando lo storico
+//  DATO STORICO PRESENZE — quanto erano piene le giornate di un evento passato
 //  ----------------------------------------------------------------------------
 //  Misura il "lift" delle presenze nei giorni dell'evento rispetto alla baseline
 //  degli stessi giorni-settimana nelle ±4 settimane (isola stagione e weekend).
-//  Per un evento futuro lo aggancia per somiglianza di nome alle sue edizioni
-//  passate e media i loro lift. Solo lettura: non modifica nulla, è una stima
-//  che affianca la previsione manuale dell'operatore.
+//  Per un evento futuro lo aggancia per nome alle sue edizioni passate e media i
+//  loro lift. ATTENZIONE: è correlazione, non causa — presenze alte nei giorni
+//  dell'evento non significano che l'evento le abbia causate (può essere
+//  stagione/weekend/altri eventi). Solo lettura; affianca la previsione manuale.
 // ============================================================================
 function liftEvento(dataInizio, dataFine){
   const gg = intervalloDate(dataInizio, dataFine);
@@ -166,20 +167,24 @@ function aggiornaPrevisioneStorica(){
   const r = previsioneStorica({ nome:maiuscolo(nome), dataInizio:di, dataFine:df, id:EDIT_ID });
   box.classList.remove("nascosto");
   if (r.stato === "nessuno-storico"){
-    box.innerHTML = `📈 <b>Previsione storica:</b> <span class="ps-na">nessuno storico per questo evento — non calcolabile</span>`;
+    box.innerHTML = `📈 <b>Dato storico presenze:</b> <span class="ps-na">nessuno storico per questo evento — non calcolabile</span>`;
     return;
   }
   if (r.stato === "senza-dati"){
-    box.innerHTML = `📈 <b>Previsione storica:</b> <span class="ps-na">edizioni passate trovate, ma senza dati presenze nei loro giorni</span>`;
+    box.innerHTML = `📈 <b>Dato storico presenze:</b> <span class="ps-na">edizioni passate trovate, ma senza dati presenze nei loro giorni</span>`;
     return;
   }
   const P = PREVISIONI[r.livello];
   const segno = r.lift>=0 ? "+" : "";
+  const annoRif = r.rif.ev.dataInizio.slice(0,4);
+  const frase = r.nEdizioni === 1
+    ? `Nei giorni dell'edizione ${annoRif} le presenze erano <b>${segno}${r.lift.toFixed(0)}%</b> rispetto alla norma del periodo.`
+    : `Nelle ${r.nEdizioni} edizioni passate le presenze erano in media <b>${segno}${r.lift.toFixed(0)}%</b> rispetto alla norma del periodo.`;
   box.innerHTML = `
-    📈 <b>Previsione storica:</b>
+    📈 <b>Dato storico presenze</b>
     <span class="pallino ${r.livello}"></span> <b>${P.label.toUpperCase()}</b>
-    <span class="ps-dett">(lift ${segno}${r.lift.toFixed(0)}% · ${r.nEdizioni} ediz. · confidenza ${r.confidenza})</span>
-    <div class="ps-rif">basato su: ${esc(r.rif.ev.nome)} ${r.rif.ev.dataInizio.slice(0,4)}</div>`;
+    <div class="ps-frase">${frase}</div>
+    <div class="ps-rif">Può dipendere da stagione/weekend, non solo dall'evento · confidenza ${r.confidenza} · rif. ${esc(r.rif.ev.nome)} ${annoRif}</div>`;
 }
 
 // ============================================================================
