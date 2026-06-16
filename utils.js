@@ -55,8 +55,10 @@ function similNome(a, b){
 }
 
 const MESI = ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+const MESI_FULL = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
 const GIORNI = ["dom","lun","mar","mer","gio","ven","sab"];
 const GIORNI_FULL = ["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"];
+const GIORNI_LUN = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"]; // settimana lunedì→domenica
 
 // ---- Date (lavoriamo con stringhe "YYYY-MM-DD" per evitare problemi di fuso) --
 function oggiISO() {

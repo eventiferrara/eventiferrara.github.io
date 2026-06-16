@@ -394,6 +394,7 @@ function renderCalendario(){
 //  3) ANALISI PRESENZE / EVENTO
 // ============================================================================
 let _graficoA2 = null;
+let _graficoPattern = null;
 
 function initAnalisi(){
   // le due analisi condividono le stesse 3 modalità (anno prec. / altro periodo / evento)
@@ -404,6 +405,12 @@ function initAnalisi(){
   });
   document.getElementById("a1-confronta").addEventListener("click", analisi1);
   document.getElementById("a2-confronta").addEventListener("click", analisi2);
+
+  // pattern settimanale: riempi il menu mesi (mese corrente preselezionato)
+  const sel = document.getElementById("pat-mese");
+  sel.innerHTML = MESI_FULL.map((m,i) => `<option value="${i}">${m}</option>`).join("");
+  sel.value = new Date().getMonth();
+  document.getElementById("pat-mostra").addEventListener("click", patternSettimanale);
 }
 
 // mostra/nasconde i box in base alla modalità scelta (annoprec nasconde entrambi)
@@ -522,6 +529,115 @@ function analisi2(){
                x:{ title:{display:true,text:"Giorni del periodo (allineati per posizione)"} } }
     }
   });
+}
+
+// ---- Pattern settimanale: una linea per anno + mediana (pattern tipico) ------
+// Allinea i giorni per giorno-settimana (lunedì con lunedì) su una griglia a
+// calendario: slot X = settimana-del-mese * 7 + giorno-settimana (0=Lun..6=Dom).
+function patternSettimanale(){
+  const nota = document.getElementById("pat-nota");
+  const m = Number(document.getElementById("pat-mese").value);   // 0..11
+  const anni = Object.keys(PRESENZE).map(Number).sort();
+
+  // posizione di una data ISO nella griglia settimanale del suo mese
+  const slotDi = (iso, off) => {
+    const dd = Number(iso.slice(8,10));
+    const wd = (isoADate(iso).getDay()+6)%7;                      // Lun=0..Dom=6
+    return Math.floor((dd-1+off)/7)*7 + wd;
+  };
+
+  // raccogli i valori di ogni anno per slot; tieni traccia della data reale
+  const perAnno = {};       // anno -> { slot: {iso, v} }
+  let maxSlot = 6;
+  anni.forEach(a => {
+    const giorni = PRESENZE[a] || {};
+    const off = (isoADate(`${a}-${pad(m+1)}-01`).getDay()+6)%7;   // gg-sett. del 1° del mese
+    const ndays = new Date(a, m+1, 0).getDate();
+    const slots = {};
+    for (let dd=1; dd<=ndays; dd++){
+      const iso = `${a}-${pad(m+1)}-${pad(dd)}`;
+      const x = slotDi(iso, off);
+      if (x > maxSlot) maxSlot = x;
+      const v = giorni[iso];
+      if (v != null) slots[x] = { iso, v };
+    }
+    if (Object.keys(slots).length) perAnno[a] = slots;
+  });
+
+  const annoCorr = new Date().getFullYear();
+  const anniConDati = Object.keys(perAnno).map(Number).sort();
+  if (!anniConDati.length){
+    if (_graficoPattern){ _graficoPattern.destroy(); _graficoPattern = null; }
+    nota.innerHTML = `<span class="esito err">Nessun dato presenze per ${MESI_FULL[m]}.</span>`;
+    return;
+  }
+
+  const nSlot = maxSlot + 1;
+  const labels = Array.from({length:nSlot}, (_,x) => `S${Math.floor(x/7)+1}·${GIORNI_LUN[x%7]}`);
+
+  // una linea (sottile) per anno; l'anno corrente evidenziato
+  const datasets = anniConDati.map((a,i) => {
+    const dati = new Array(nSlot).fill(null);
+    const date = new Array(nSlot).fill(null);
+    for (const [x,o] of Object.entries(perAnno[a])){ dati[x]=o.v; date[x]=o.iso; }
+    const corr = a === annoCorr;
+    return {
+      label: String(a),
+      data: dati, _date: date,
+      borderColor: corr ? "#0b6fb8" : `hsl(${Math.round(i/anniConDati.length*300)},55%,68%)`,
+      backgroundColor: "transparent",
+      borderWidth: corr ? 2.5 : 1,
+      pointRadius: 0, pointHoverRadius: 4, tension: 0.3, spanGaps: false
+    };
+  });
+
+  // mediana per slot (solo se ≥3 anni hanno il dato): la linea "pattern"
+  const medi = new Array(nSlot).fill(null);
+  for (let x=0; x<nSlot; x++){
+    const vals = anniConDati.map(a => perAnno[a][x]?.v).filter(v => v != null);
+    if (vals.length >= 3) medi[x] = mediana(vals);
+  }
+  datasets.push({
+    label: "MEDIANA (pattern)",
+    data: medi, _date: null,
+    borderColor: "#111", backgroundColor: "transparent",
+    borderWidth: 4, pointRadius: 0, pointHoverRadius: 5, tension: 0.3, spanGaps: false, order: -1
+  });
+
+  if (_graficoPattern) _graficoPattern.destroy();
+  _graficoPattern = new Chart(document.getElementById("pat-grafico"), {
+    type: "line",
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: "nearest", intersect: false },
+      plugins: {
+        legend: { position: "top", labels: { boxWidth: 12, font: { size: 10 } } },
+        tooltip: { callbacks: { label: (it) => {
+          const ds = it.dataset, v = it.parsed.y;
+          if (v == null) return null;
+          if (!ds._date) return `${ds.label}: ${v.toLocaleString('it-IT')}`;
+          const iso = ds._date[it.dataIndex];
+          return `${ds.label} (${iso?dataCompatta(iso):"—"}): ${v.toLocaleString('it-IT')}`;
+        }}}
+      },
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: "Presenze" } },
+        x: { title: { display: true, text: "Settimane del mese · giorno (Lun→Dom)" } }
+      }
+    }
+  });
+
+  const nMed = medi.filter(v => v != null).length;
+  nota.innerHTML = `La linea spessa è la <b>mediana</b> di ${anniConDati.length} anni `
+    + `(${anniConDati[0]}–${anniConDati[anniConDati.length-1]}): il pattern "tipico" dei giorni della settimana. `
+    + `Festività mobili (Pasqua) ed eventi straordinari (congressi) spostano i singoli anni — la mediana li attenua ma non li annulla.`
+    + (nMed < nSlot ? ` <span class="ev-meta">(la mediana è tracciata solo dove almeno 3 anni hanno il dato)</span>` : "");
+}
+
+function mediana(arr){
+  const s = [...arr].sort((a,b) => a-b), n = s.length;
+  return n % 2 ? s[(n-1)/2] : (s[n/2-1] + s[n/2]) / 2;
 }
 
 // ============================================================================
