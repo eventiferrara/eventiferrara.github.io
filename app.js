@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // default date = oggi
   const oggi = oggiISO();
   ["ev-inizio","ev-fine"].forEach(id => document.getElementById(id).value = oggi);
+  document.getElementById("ev-fine").min = oggi;
 
   ascoltaEventi();   // carica e tiene aggiornati gli eventi in tempo reale
   caricaPresenze();  // carica i dati presenze (sola lettura, pubblica)
@@ -85,9 +86,10 @@ function initInserisci(){
   const nome = document.getElementById("ev-nome");
   nome.addEventListener("input", () => { nome.value = maiuscolo(nome.value); });
 
-  // mantieni data fine >= data inizio
+  // il calendario "al" parte dal giorno scelto in "dal" (e non può andare prima)
   document.getElementById("ev-inizio").addEventListener("change", e => {
     const f = document.getElementById("ev-fine");
+    f.min = e.target.value;
     if (!f.value || f.value < e.target.value) f.value = e.target.value;
   });
 
@@ -177,6 +179,7 @@ function resetForm(){
   const oggi = oggiISO();
   document.getElementById("ev-inizio").value = oggi;
   document.getElementById("ev-fine").value = oggi;
+  document.getElementById("ev-fine").min = oggi;
 }
 function annullaModifica(){
   EDIT_ID = null;
@@ -591,6 +594,7 @@ function modificaEvento(id){
   EDIT_ID = id;
   document.getElementById("ev-inizio").value = ev.dataInizio;
   document.getElementById("ev-fine").value   = ev.dataFine;
+  document.getElementById("ev-fine").min     = ev.dataInizio;
   document.getElementById("ev-nome").value   = ev.nome;
   document.getElementById("ev-tipologia").value = ev.tipologia||"";
   document.getElementById("ev-previsione").value = ev.previsione||"";
