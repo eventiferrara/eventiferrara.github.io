@@ -17,6 +17,7 @@
 # ============================================================================
 
 import os, json, sys
+from datetime import date
 import urllib.request, urllib.parse
 
 import firebase_admin
@@ -135,14 +136,22 @@ def main():
         print(f"Primo avvio: marcati {len(eventi)} eventi come già notificati (nessun invio).")
         return
 
+    # invia solo gli eventi non ancora conclusi (dataFine >= oggi, data del computer):
+    # gli eventi passati / import storici vengono marcati come visti senza inviare nulla,
+    # così il canale segnala solo gli eventi futuri.
+    oggi = date.today().isoformat()
     inviati = 0
     for eid in nuovi:
-        try:
-            invia_telegram(messaggio_evento(eventi[eid]))
-            notificati.add(eid)
-            inviati += 1
-        except Exception as e:
-            print(f"Errore invio {eid}: {e}")
+        ev = eventi[eid]
+        futuro = ev.get("dataFine") or ev.get("dataInizio") or ""
+        if futuro >= oggi:
+            try:
+                invia_telegram(messaggio_evento(ev))
+                inviati += 1
+            except Exception as e:
+                print(f"Errore invio {eid}: {e}")
+                continue
+        notificati.add(eid)  # comunque marcato come visto (anche se passato)
 
     # tieni nello stato solo gli id ancora esistenti (pulizia)
     notificati &= set(eventi.keys())
