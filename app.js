@@ -396,6 +396,30 @@ function renderCalendario(){
 let _graficoA2 = null;
 let _graficoPattern = null;
 
+// Plugin Chart.js: fasce verticali grigio chiaro dietro sabato e domenica.
+// Gli slot dell'asse sono weekend quando indice%7 è 5 (Sab) o 6 (Dom).
+const fasceWeekend = {
+  id: "fasceWeekend",
+  beforeDraw(chart){
+    const { ctx, chartArea, scales } = chart;
+    const x = scales.x; if (!x || !chartArea) return;
+    const colori = { 5: "rgba(90,90,90,0.09)", 6: "rgba(90,90,90,0.17)" }; // sab più chiaro, dom più scuro
+    const n = chart.data.labels.length;
+    ctx.save();
+    for (let i=0; i<n; i++){
+      const wd = i % 7;
+      if (wd !== 5 && wd !== 6) continue;
+      const c = x.getPixelForValue(i);
+      const prev = i>0   ? x.getPixelForValue(i-1) : 2*c - x.getPixelForValue(i+1);
+      const next = i<n-1 ? x.getPixelForValue(i+1) : 2*c - x.getPixelForValue(i-1);
+      const left = (prev+c)/2, right = (c+next)/2;
+      ctx.fillStyle = colori[wd];
+      ctx.fillRect(left, chartArea.top, right-left, chartArea.bottom-chartArea.top);
+    }
+    ctx.restore();
+  }
+};
+
 function initAnalisi(){
   // le due analisi condividono le stesse 3 modalità (anno prec. / altro periodo / evento)
   ["a1","a2"].forEach(p => {
@@ -607,6 +631,7 @@ function patternSettimanale(){
   if (_graficoPattern) _graficoPattern.destroy();
   _graficoPattern = new Chart(document.getElementById("pat-grafico"), {
     type: "line",
+    plugins: [fasceWeekend],
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -629,7 +654,8 @@ function patternSettimanale(){
   });
 
   const nMed = medi.filter(v => v != null).length;
-  nota.innerHTML = `La linea spessa è la <b>mediana</b> di ${anniConDati.length} anni `
+  nota.innerHTML = `Le fasce grigie evidenziano <b>sabato</b> (chiaro) e <b>domenica</b> (più scuro). `
+    + `La linea spessa è la <b>mediana</b> di ${anniConDati.length} anni `
     + `(${anniConDati[0]}–${anniConDati[anniConDati.length-1]}): il pattern "tipico" dei giorni della settimana. `
     + `Festività mobili (Pasqua) ed eventi straordinari (congressi) spostano i singoli anni — la mediana li attenua ma non li annulla.`
     + (nMed < nSlot ? ` <span class="ev-meta">(la mediana è tracciata solo dove almeno 3 anni hanno il dato)</span>` : "");
