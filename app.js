@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCatFiltri();
   initInserisci();
   initCalendario();
+  initVistaCalendario();
   initAnalisi();
   initAdmin();
 
@@ -81,7 +82,7 @@ function ascoltaEventi(){
     EVENTI = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     EVENTI.sort((a,b) => (a.dataInizio||"").localeCompare(b.dataInizio||""));
     aggiornaDatalistNomi();
-    renderCalendario();
+    aggiornaVistaCalendario();
     aggiornaTabellaAdmin();
   }, err => console.error("Errore lettura eventi:", err));
 }
@@ -361,7 +362,7 @@ function initCatFiltri(){
     pills.forEach(x => x.classList.toggle("attiva", x === p));
     mostraTab("calendario");   // mostra il calendario filtrato
     chiudiMenu();
-    renderCalendario();
+    aggiornaVistaCalendario();
   }));
 }
 
@@ -395,6 +396,19 @@ function eventiPerGiorno(daIso, aIso){
     });
   });
   return mappa;
+}
+
+// HTML di una riga evento (usata da elenco e dal dettaglio giorno della vista mese)
+function rigaEventoHTML(ev){
+  return `<div class="ev-riga">
+    ${ev.previsione ? `<span class="pallino ${ev.previsione}" title="presenze: ${PREVISIONI[ev.previsione]?.label||""}"></span>` : ""}
+    <span class="ev-nome">${esc(ev.nome)}</span>
+    <span class="ev-meta">${ev.tipologia?("· "+TIPOLOGIE[ev.tipologia]):""}${ev.struttura?(" · "+esc(ev.struttura)):""}</span>
+    <button class="ics" data-id="${esc(ev.id)}" title="Aggiungi al mio calendario" aria-label="Aggiungi al mio calendario">📅 +</button>
+  </div>`;
+}
+function rigaFestHTML(nome){
+  return `<div class="ev-riga">🎉 <span class="ev-nome">${esc(nome)}</span></div>`;
 }
 
 function renderCalendario(){
@@ -437,14 +451,8 @@ function renderCalendario(){
     const fest = mostraFest ? festivitaDi(iso) : null;
     const evs = (mappa[iso]||[]);
     const cellaEventi = [
-      fest ? `<div class="ev-riga">🎉 <span class="ev-nome">${esc(fest)}</span></div>` : "",
-      ...evs.map(ev => `
-        <div class="ev-riga">
-          ${ev.previsione ? `<span class="pallino ${ev.previsione}" title="presenze: ${PREVISIONI[ev.previsione]?.label||""}"></span>` : ""}
-          <span class="ev-nome">${esc(ev.nome)}</span>
-          <span class="ev-meta">${ev.tipologia?("· "+TIPOLOGIE[ev.tipologia]):""}${ev.struttura?(" · "+esc(ev.struttura)):""}</span>
-          <button class="ics" data-id="${esc(ev.id)}" title="Aggiungi al mio calendario" aria-label="Aggiungi al mio calendario">📅 +</button>
-        </div>`)
+      fest ? rigaFestHTML(fest) : "",
+      ...evs.map(rigaEventoHTML)
     ].join("") || `<span class="ev-meta">—</span>`;
 
     const cls = [ fest?"festivo":"", isWeekend(iso)?"weekend":"", iso===ogg?"oggi":"" ].join(" ").trim();
@@ -487,6 +495,106 @@ function scaricaICS(id){
   a.href = url; a.download = "evento-" + (slug || "ferrara") + ".ics";
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// ============================================================================
+//  2b) VISTA MESE (griglia) — alternativa all'elenco
+// ============================================================================
+let _calVista = "elenco";          // "elenco" | "mese"
+let _meseAnno, _meseMese;          // mese mostrato nella griglia
+const MESI_IT = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
+                 "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+const GIORNI_IT = ["lun","mar","mer","gio","ven","sab","dom"];
+
+function initVistaCalendario(){
+  setMeseOggi();
+  document.querySelectorAll("#cal-toggle .vbtn").forEach(b =>
+    b.addEventListener("click", () => cambiaVista(b.dataset.vista)));
+  document.getElementById("mese-prev").addEventListener("click", () => spostaMese(-1));
+  document.getElementById("mese-next").addEventListener("click", () => spostaMese(1));
+  document.getElementById("mese-oggi").addEventListener("click", () => { setMeseOggi(); renderMese(); });
+  document.getElementById("giorno-overlay").addEventListener("click", chiudiGiorno);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") chiudiGiorno(); });
+}
+
+function setMeseOggi(){ const d = new Date(); _meseAnno = d.getFullYear(); _meseMese = d.getMonth(); }
+function spostaMese(delta){
+  _meseMese += delta;
+  if (_meseMese < 0){ _meseMese = 11; _meseAnno--; }
+  if (_meseMese > 11){ _meseMese = 0; _meseAnno++; }
+  renderMese();
+}
+
+function cambiaVista(vista){
+  _calVista = vista;
+  document.querySelectorAll("#cal-toggle .vbtn").forEach(b => b.classList.toggle("attiva", b.dataset.vista === vista));
+  document.getElementById("vista-elenco").classList.toggle("nascosto", vista !== "elenco");
+  document.getElementById("vista-mese").classList.toggle("nascosto", vista !== "mese");
+  aggiornaVistaCalendario();
+}
+
+// chiamata da onSnapshot e dai filtri: aggiorna la vista attiva
+function aggiornaVistaCalendario(){
+  if (_calVista === "mese") renderMese();
+  else renderCalendario();
+}
+
+function renderMese(){
+  const griglia = document.getElementById("mese-griglia");
+  if (!griglia) return;
+  document.getElementById("mese-titolo").textContent = `${MESI_IT[_meseMese]} ${_meseAnno}`;
+
+  const meseStr = `${_meseAnno}-${String(_meseMese+1).padStart(2,"0")}`;
+  const primo = `${meseStr}-01`;
+  const wd = (new Date(primo + "T00:00:00").getDay() + 6) % 7; // lun=0
+  const celle = intervalloDate(addGiorni(primo, -wd), addGiorni(primo, -wd + 41)); // 6 settimane
+  const mappa = eventiPerGiorno(celle[0], celle[celle.length - 1]);  // rispetta il filtro tipologia
+  const mostraFest = _calCat === "tutti";
+  const ogg = oggiISO();
+
+  let html = GIORNI_IT.map(g => `<div class="m-head">${g}</div>`).join("");
+  html += celle.map(iso => {
+    const fuori = !iso.startsWith(meseStr);
+    const fest  = mostraFest ? festivitaDi(iso) : null;
+    const evs   = mappa[iso] || [];
+    const chip  = [];
+    if (fest) chip.push(`<span class="m-ev m-fest">🎉 ${esc(fest)}</span>`);
+    const MAX = 3;
+    evs.slice(0, MAX).forEach(ev =>
+      chip.push(`<span class="m-ev">${ev.previsione ? `<span class="pallino ${ev.previsione}"></span>` : ""}${esc(ev.nome)}</span>`));
+    if (evs.length > MAX) chip.push(`<span class="m-altri">+${evs.length - MAX} altri</span>`);
+    const pieno = !!(fest || evs.length);
+    const cls = ["m-cell", fuori?"fuori":"", isWeekend(iso)?"m-weekend":"", iso===ogg?"m-oggi":"", pieno?"m-pieno":""].filter(Boolean).join(" ");
+    return `<div class="${cls}" data-iso="${iso}">
+      <div class="m-num">${parseInt(iso.slice(-2),10)}</div>
+      <div class="m-eventi">${chip.join("")}</div>
+    </div>`;
+  }).join("");
+  griglia.innerHTML = html;
+
+  griglia.querySelectorAll(".m-cell.m-pieno").forEach(c =>
+    c.addEventListener("click", () => apriGiorno(c.dataset.iso)));
+}
+
+// popover col dettaglio degli eventi di un giorno (riusa il rendering dell'elenco)
+function apriGiorno(iso){
+  const mostraFest = _calCat === "tutti";
+  const fest = mostraFest ? festivitaDi(iso) : null;
+  const evs  = (eventiPerGiorno(iso, iso)[iso]) || [];
+  const corpo = [ fest ? rigaFestHTML(fest) : "", ...evs.map(rigaEventoHTML) ].join("")
+                || `<p class="aiuto">Nessun evento in questa data.</p>`;
+  const pop = document.getElementById("giorno-pop");
+  pop.innerHTML = `<div class="gp-testa"><b>${dataLeggibile(iso)}</b>
+      <button id="gp-chiudi" class="gp-chiudi" aria-label="Chiudi">✕</button></div>
+    <div class="gp-corpo">${corpo}</div>`;
+  pop.classList.remove("nascosto");
+  document.getElementById("giorno-overlay").classList.remove("nascosto");
+  pop.querySelector("#gp-chiudi").onclick = chiudiGiorno;
+  pop.querySelectorAll(".ics").forEach(b => b.onclick = () => scaricaICS(b.dataset.id));
+}
+function chiudiGiorno(){
+  document.getElementById("giorno-pop").classList.add("nascosto");
+  document.getElementById("giorno-overlay").classList.add("nascosto");
 }
 
 // Riepilogo mostrato sopra la tabella: tipologia filtrata, n. eventi e periodo.

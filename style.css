@@ -225,6 +225,46 @@ tr.oggi td{box-shadow:inset 3px 0 0 var(--oro)}
 .cal-riepilogo{margin:0 0 10px;font-size:.9rem;color:var(--testo-soft)}
 .cal-riepilogo .ric-cat{color:var(--oro);font-weight:600}
 .cal-riepilogo b{color:var(--testo)}
+
+/* ---- toggle Elenco / Mese ---- */
+.cal-toggle{display:inline-flex;gap:4px;background:var(--card);border:1px solid var(--bordo);border-radius:999px;padding:4px;margin:2px 0 14px}
+.cal-toggle .vbtn{background:transparent;color:var(--testo-soft);border:0;padding:9px 18px;border-radius:999px;font-weight:600;font-size:.88rem}
+.cal-toggle .vbtn:hover{color:var(--testo)}
+.cal-toggle .vbtn.attiva{background:var(--oro);color:#241c0c}
+
+/* ---- vista mese: navigazione ---- */
+.mese-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.mese-nav button{background:var(--card);border:1px solid var(--bordo-forte);color:var(--testo);border-radius:10px;padding:8px 14px;font-weight:600}
+.mese-nav button:hover{border-color:var(--oro);color:var(--oro)}
+.mese-frec{font-size:1.1rem;line-height:1;padding:8px 13px}
+.mese-titolo{font-family:var(--serif);font-size:1.35rem;color:var(--testo);margin-left:8px}
+
+/* ---- vista mese: griglia ---- */
+.mese-griglia{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--bordo);border:1px solid var(--bordo);border-radius:14px;overflow:hidden}
+.m-head{background:#172742;color:var(--oro);text-align:center;padding:9px 4px;font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.m-cell{background:var(--card);min-height:106px;padding:7px 8px;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.m-cell.m-pieno{cursor:pointer}
+.m-cell.m-pieno:hover{background:var(--card-2)}
+.m-cell.fuori{background:#0e1a2c}
+.m-cell.fuori .m-num{opacity:.4}
+.m-cell.fuori .m-ev{opacity:.55}
+.m-cell.m-weekend{background:#13223a}
+.m-cell.m-oggi{box-shadow:inset 0 0 0 2px var(--oro)}
+.m-num{font-size:.84rem;color:var(--testo-soft);font-weight:600}
+.m-cell.m-oggi .m-num{color:var(--oro)}
+.m-eventi{display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.m-ev{display:block;font-size:.72rem;color:var(--testo);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.55}
+.m-ev .pallino{width:8px;height:8px;margin:0 5px 0 0;vertical-align:middle}
+.m-fest{color:#f0dca0}
+.m-altri{font-size:.7rem;color:var(--testo-debole);font-weight:600}
+
+/* ---- popover dettaglio giorno ---- */
+.giorno-overlay{position:fixed;inset:0;background:rgba(6,11,19,.62);z-index:90}
+.giorno-pop{position:fixed;z-index:95;left:50%;top:50%;transform:translate(-50%,-50%);width:min(480px,92vw);max-height:80vh;overflow:auto;background:#0f1c2e;border:1px solid var(--bordo);border-radius:16px;box-shadow:var(--ombra);padding:16px 18px}
+.gp-testa{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bordo);padding-bottom:10px;margin-bottom:10px}
+.gp-testa b{font-family:var(--serif);font-size:1.1rem;color:var(--testo)}
+.gp-chiudi{background:transparent;color:var(--testo-soft);font-size:1.05rem;padding:4px 8px}
+.gp-corpo .ev-riga{margin:9px 0}
 tbody tr:hover{background:rgba(255,255,255,.03)}
 .ev-riga{display:flex;align-items:center;gap:7px;margin:3px 0}
 .ev-nome{font-weight:600;color:var(--testo)}
@@ -261,4 +301,9 @@ footer{text-align:center;color:var(--testo-debole);padding:26px;font-size:.8rem;
   .hero-anno{display:none}
   .hero-filtri{gap:8px}
   .cat{padding:9px 16px;font-size:.88rem}
+  .m-cell{min-height:72px;padding:5px 5px;gap:2px}
+  .m-num{font-size:.76rem}
+  .m-ev{font-size:.64rem}
+  .m-head{font-size:.64rem;padding:7px 2px}
+  .mese-titolo{font-size:1.1rem;width:100%;margin:6px 0 0}
 }

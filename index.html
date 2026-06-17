@@ -134,15 +134,9 @@
     <section id="tab-calendario" class="pannello attivo">
       <h2>Calendario eventi</h2>
 
-      <div class="filtri">
-        <label>Dal
-          <input type="date" id="cal-da" />
-        </label>
-        <label>Al
-          <input type="date" id="cal-a" />
-        </label>
-        <button id="cal-cerca" class="secondario">🔍 Cerca per data</button>
-        <button id="cal-reset" class="secondario">↺ Mostra prossimi</button>
+      <div class="cal-toggle" id="cal-toggle" role="tablist" aria-label="Vista calendario">
+        <button class="vbtn attiva" data-vista="elenco">☰ Elenco</button>
+        <button class="vbtn" data-vista="mese">▦ Mese</button>
       </div>
 
       <p class="legenda">
@@ -153,16 +147,41 @@
         &nbsp;·&nbsp; 🎉 = festività
       </p>
 
-      <p id="cal-riepilogo" class="cal-riepilogo"></p>
+      <!-- VISTA ELENCO -->
+      <div id="vista-elenco">
+        <div class="filtri">
+          <label>Dal <input type="date" id="cal-da" /></label>
+          <label>Al <input type="date" id="cal-a" /></label>
+          <button id="cal-cerca" class="secondario">🔍 Cerca per data</button>
+          <button id="cal-reset" class="secondario">↺ Mostra prossimi</button>
+        </div>
 
-      <div class="tabella-wrap">
-        <table id="tabella-calendario">
-          <thead>
-            <tr><th class="col-data">Data</th><th>Eventi</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <p id="cal-riepilogo" class="cal-riepilogo"></p>
+
+        <div class="tabella-wrap">
+          <table id="tabella-calendario">
+            <thead>
+              <tr><th class="col-data">Data</th><th>Eventi</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
+
+      <!-- VISTA MESE -->
+      <div id="vista-mese" class="nascosto">
+        <div class="mese-nav">
+          <button id="mese-prev" class="mese-frec" aria-label="Mese precedente">‹</button>
+          <button id="mese-oggi" class="mese-oggi-btn">Oggi</button>
+          <button id="mese-next" class="mese-frec" aria-label="Mese successivo">›</button>
+          <span id="mese-titolo" class="mese-titolo"></span>
+        </div>
+        <div id="mese-griglia" class="mese-griglia"></div>
+      </div>
+
+      <!-- popover dettaglio del giorno (vista mese) -->
+      <div id="giorno-overlay" class="giorno-overlay nascosto"></div>
+      <div id="giorno-pop" class="giorno-pop nascosto" role="dialog" aria-modal="true"></div>
     </section>
 
     <!-- ============================ ANALISI ============================ -->
