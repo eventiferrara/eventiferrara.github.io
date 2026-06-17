@@ -27,6 +27,10 @@
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+
+/* testo selezionato: oro su scuro, sempre leggibile */
+::selection{background:var(--oro);color:#241c0c}
+::-moz-selection{background:var(--oro);color:#241c0c}
 body{
   margin:0;font-family:var(--sans);
   background:var(--bg);color:var(--testo);line-height:1.55;
@@ -165,7 +169,10 @@ input:focus,select:focus{outline:none;border-color:var(--oro);box-shadow:0 0 0 3
 input::placeholder{color:var(--testo-debole)}
 input[type=radio]{width:auto;margin:0 6px 0 0;accent-color:var(--oro)}
 input[type=file]{padding:9px;background:var(--card)}
-select option{background:var(--card)}
+select option{background:#15243a;color:var(--testo)}
+/* icona del calendario nei campi data: schiarita per essere visibile sullo sfondo scuro */
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.85) brightness(1.1);opacity:.85;cursor:pointer}
+input[type=date]::-webkit-calendar-picker-indicator:hover{opacity:1}
 .riga2{display:flex;gap:14px;flex-wrap:wrap}
 .riga2 > label{flex:1;min-width:170px}
 small.aiuto{font-weight:400;display:block;margin-top:5px}
