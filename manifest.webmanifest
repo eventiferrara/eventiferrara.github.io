@@ -1,0 +1,17 @@
+{
+  "name": "Eventi Ferrara — Calendario eventi della città",
+  "short_name": "Eventi Ferrara",
+  "description": "Calendario condiviso degli eventi di Ferrara, con previsione delle presenze turistiche.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d1726",
+  "theme_color": "#0d1726",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

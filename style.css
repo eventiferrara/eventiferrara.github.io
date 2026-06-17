@@ -217,6 +217,14 @@ thead th{position:sticky;top:0;background:#172742;z-index:1;color:var(--oro);fon
 .col-data{white-space:nowrap;width:150px;color:var(--testo-soft)}
 tr.festivo{background:rgba(232,195,74,.07)}
 tr.weekend td.col-data{color:var(--oro);font-weight:600}
+tr.oggi{background:rgba(216,184,118,.12)}
+tr.oggi td{box-shadow:inset 3px 0 0 var(--oro)}
+.badge-oggi{display:inline-block;margin-left:6px;background:var(--oro);color:#241c0c;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;vertical-align:middle}
+
+/* riepilogo sopra la tabella */
+.cal-riepilogo{margin:0 0 10px;font-size:.9rem;color:var(--testo-soft)}
+.cal-riepilogo .ric-cat{color:var(--oro);font-weight:600}
+.cal-riepilogo b{color:var(--testo)}
 tbody tr:hover{background:rgba(255,255,255,.03)}
 .ev-riga{display:flex;align-items:center;gap:7px;margin:3px 0}
 .ev-nome{font-weight:600;color:var(--testo)}

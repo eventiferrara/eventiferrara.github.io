@@ -22,9 +22,20 @@ document.addEventListener("DOMContentLoaded", () => {
   ["ev-inizio","ev-fine"].forEach(id => document.getElementById(id).value = oggi);
   document.getElementById("ev-fine").min = oggi;
 
+  // anno corrente nell'hero (così non va aggiornato a mano)
+  const annoEl = document.getElementById("hero-anno");
+  if (annoEl) annoEl.textContent = "CALENDARIO " + new Date().getFullYear();
+
   ascoltaEventi();   // carica e tiene aggiornati gli eventi in tempo reale
   caricaPresenze();  // carica i dati presenze (sola lettura, pubblica)
 });
+
+// PWA: registra il service worker (sito installabile + fallback offline)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
 
 // ---- Navigazione schede ------------------------------------------------------
 function initTabs(){
@@ -405,15 +416,23 @@ function renderCalendario(){
   // le festività compaiono solo col filtro "Tutti", non con una tipologia specifica
   const mostraFest = _calCat === "tutti";
 
+  // riepilogo sopra la tabella: filtro attivo, n. eventi e periodo
+  const idEventi = new Set();
+  Object.values(mappa).forEach(arr => arr.forEach(ev => idEventi.add(ev.id)));
+  const nEventi = idEventi.size;
+  aggiornaRiepilogoCal(nEventi, daIso, aIso);
+
   // in modalità "prossimi" mostro solo i giorni con eventi o festività (per non avere righe vuote infinite)
   const soloPieni = !( _calDa && _calA );
   const righe = giorni.filter(iso => !soloPieni || mappa[iso] || (mostraFest && festivitaDi(iso)));
 
   if (!righe.length){
-    tbody.innerHTML = `<tr><td colspan="2" class="aiuto">Nessun evento nel periodo selezionato.</td></tr>`;
+    const filtroTxt = _calCat === "tutti" ? "" : ` per la tipologia “${TIPOLOGIE[_calCat]}”`;
+    tbody.innerHTML = `<tr><td colspan="2" class="aiuto">Nessun evento${filtroTxt} nel periodo selezionato.</td></tr>`;
     return;
   }
 
+  const ogg = oggiISO();
   tbody.innerHTML = righe.map(iso => {
     const fest = mostraFest ? festivitaDi(iso) : null;
     const evs = (mappa[iso]||[]);
@@ -427,9 +446,22 @@ function renderCalendario(){
         </div>`)
     ].join("") || `<span class="ev-meta">—</span>`;
 
-    const cls = [ fest?"festivo":"", isWeekend(iso)?"weekend":"" ].join(" ").trim();
-    return `<tr class="${cls}"><td class="col-data">${dataLeggibile(iso)}</td><td>${cellaEventi}</td></tr>`;
+    const cls = [ fest?"festivo":"", isWeekend(iso)?"weekend":"", iso===ogg?"oggi":"" ].join(" ").trim();
+    const badge = iso===ogg ? ` <span class="badge-oggi">oggi</span>` : "";
+    return `<tr class="${cls}"><td class="col-data">${dataLeggibile(iso)}${badge}</td><td>${cellaEventi}</td></tr>`;
   }).join("");
+}
+
+// Riepilogo mostrato sopra la tabella: tipologia filtrata, n. eventi e periodo.
+function aggiornaRiepilogoCal(nEventi, daIso, aIso){
+  const el = document.getElementById("cal-riepilogo");
+  if (!el) return;
+  const cat = _calCat === "tutti" ? "Tutte le tipologie" : TIPOLOGIE[_calCat];
+  const periodo = (_calDa && _calA)
+    ? `dal ${dataCompatta(daIso)} al ${dataCompatta(aIso)}`
+    : "prossimi eventi";
+  const parolaEv = nEventi === 1 ? "evento" : "eventi";
+  el.innerHTML = `<span class="ric-cat">${esc(cat)}</span> · <b>${nEventi}</b> ${parolaEv} · ${periodo}`;
 }
 
 // ============================================================================
