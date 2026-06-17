@@ -57,6 +57,9 @@ function mostraTab(nome){
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("attiva", b.dataset.tab===nome));
   document.querySelectorAll(".pannello").forEach(p => p.classList.remove("attivo"));
   document.getElementById("tab-"+nome).classList.add("attivo");
+  // i filtri per tipologia servono solo nella vista calendario (HOME)
+  const filtri = document.getElementById("cat-filtri");
+  if (filtri) filtri.style.display = (nome === "calendario") ? "" : "none";
 }
 
 // ============================================================================
