@@ -7,3 +7,5 @@ firebase-service-account*.json
 *.local
 # impostazioni locali dell'assistente
 .claude/
+# backup locale dell'immagine hero originale (l'originale resta nella storia git)
+materiali/IMG_1411_originale.jpeg

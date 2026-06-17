@@ -229,6 +229,8 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .ev-riga{display:flex;align-items:center;gap:7px;margin:3px 0}
 .ev-nome{font-weight:600;color:var(--testo)}
 .ev-meta{color:var(--testo-soft);font-size:.82rem}
+.ics{margin-left:auto;flex:none;background:transparent;border:1px solid var(--bordo-forte);color:var(--testo-soft);font-size:.74rem;font-weight:600;padding:3px 9px;border-radius:999px;line-height:1.2;white-space:nowrap}
+.ics:hover{border-color:var(--oro);color:var(--oro)}
 
 /* ============================ ANALISI ============================ */
 .card-analisi{background:var(--card);border:1px solid var(--bordo);border-radius:16px;padding:20px;margin:18px 0;box-shadow:var(--ombra)}

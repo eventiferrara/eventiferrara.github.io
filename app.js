@@ -443,6 +443,7 @@ function renderCalendario(){
           ${ev.previsione ? `<span class="pallino ${ev.previsione}" title="presenze: ${PREVISIONI[ev.previsione]?.label||""}"></span>` : ""}
           <span class="ev-nome">${esc(ev.nome)}</span>
           <span class="ev-meta">${ev.tipologia?("· "+TIPOLOGIE[ev.tipologia]):""}${ev.struttura?(" · "+esc(ev.struttura)):""}</span>
+          <button class="ics" data-id="${esc(ev.id)}" title="Aggiungi al mio calendario" aria-label="Aggiungi al mio calendario">📅 +</button>
         </div>`)
     ].join("") || `<span class="ev-meta">—</span>`;
 
@@ -450,6 +451,42 @@ function renderCalendario(){
     const badge = iso===ogg ? ` <span class="badge-oggi">oggi</span>` : "";
     return `<tr class="${cls}"><td class="col-data">${dataLeggibile(iso)}${badge}</td><td>${cellaEventi}</td></tr>`;
   }).join("");
+
+  tbody.querySelectorAll(".ics").forEach(b => b.onclick = () => scaricaICS(b.dataset.id));
+}
+
+// Scarica un evento come file .ics (Google/Apple Calendar). Evento "tutto il giorno".
+function scaricaICS(id){
+  const ev = EVENTI.find(e => e.id === id);
+  if (!ev) return;
+  const soloData = iso => iso.replace(/-/g, "");
+  const escIcs = s => String(s || "").replace(/\\/g, "\\\\").replace(/[;,]/g, m => "\\" + m).replace(/\n/g, "\\n");
+  const descr = [
+    ev.tipologia  ? "Tipologia: " + TIPOLOGIE[ev.tipologia] : "",
+    ev.previsione ? "Presenze attese: " + (PREVISIONI[ev.previsione]?.label || ev.previsione) : "",
+    ev.struttura  ? "Inserito da: " + ev.struttura : ""
+  ].filter(Boolean).join("\\n");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const ics = [
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Eventi Ferrara//IT", "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    "UID:" + id + "@eventiferrara",
+    "DTSTAMP:" + stamp,
+    "DTSTART;VALUE=DATE:" + soloData(ev.dataInizio),
+    "DTEND;VALUE=DATE:" + soloData(addGiorni(ev.dataFine, 1)), // fine esclusiva
+    "SUMMARY:" + escIcs(ev.nome),
+    descr ? "DESCRIPTION:" + descr : "",
+    "LOCATION:Ferrara",
+    "END:VEVENT", "END:VCALENDAR"
+  ].filter(Boolean).join("\r\n");
+
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const slug = (ev.nome || "evento").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+  a.href = url; a.download = "evento-" + (slug || "ferrara") + ".ics";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // Riepilogo mostrato sopra la tabella: tipologia filtrata, n. eventi e periodo.
