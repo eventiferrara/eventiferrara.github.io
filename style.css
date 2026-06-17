@@ -45,7 +45,7 @@ body{
   flex-direction:column;
   padding:26px clamp(22px,6vw,84px) clamp(40px,8vh,90px);
   background-color:#0c1626;
-  background-image:url("assets/IMG_1411.jpeg");
+  background-image:url("assets/IMG_1411.webp");
   background-size:cover;
   background-position:center 30%;
   background-blend-mode:luminosity;   /* desatura il castello verso il navy */

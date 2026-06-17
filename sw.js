@@ -2,14 +2,14 @@
 // Strategia NETWORK-FIRST: online si vede sempre la versione aggiornata;
 // la cache serve solo da fallback offline per lo "scheletro" dell'app.
 // (Scelta voluta: il sito cambia spesso, evitiamo di servire versioni vecchie.)
-const CACHE = "eventi-ferrara-v1";
+const CACHE = "eventi-ferrara-v2";
 const SHELL = [
   "./",
   "./index.html",
   "./style.css",
   "./utils.js",
   "./app.js",
-  "./assets/IMG_1411.jpeg",
+  "./assets/IMG_1411.webp",
   "./assets/icon-192.png",
   "./manifest.webmanifest"
 ];
