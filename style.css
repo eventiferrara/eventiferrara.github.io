@@ -221,7 +221,7 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .scelta-confronto label{font-weight:500;color:var(--testo-soft)}
 .lista-eventi{width:100%;margin-top:6px}
 .risultato{margin-top:16px}
-.grafico-wrap{margin-top:16px;position:relative;height:340px}
+.grafico-wrap{margin-top:16px;position:relative;height:364px;background:#fff;border:1px solid var(--bordo);border-radius:12px;padding:12px}
 
 .tab-diff{width:100%;border-collapse:collapse;margin-top:8px;font-size:.9rem}
 .tab-diff th,.tab-diff td{border:1px solid var(--bordo);padding:7px 11px;text-align:right;color:var(--testo)}
