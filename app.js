@@ -31,6 +31,12 @@ function initTabs(){
   document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener("click", () => { mostraTab(btn.dataset.tab); chiudiMenu(); });
   });
+  // voce HOME: torna in cima all'hero e mostra il calendario
+  document.getElementById("nav-home").addEventListener("click", () => {
+    mostraTab("calendario");
+    chiudiMenu();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
   // menu hamburger
   document.getElementById("menu-toggle").addEventListener("click", apriMenu);
   document.getElementById("menu-chiudi").addEventListener("click", chiudiMenu);

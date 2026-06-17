@@ -136,12 +136,12 @@ body{
   font-family:var(--serif);font-size:1.05rem;color:var(--oro);
 }
 .drawer-chiudi{background:transparent;color:var(--testo-soft);font-size:1.15rem;padding:4px 8px}
-.tab{
+.tab,.nav-home{
   border:0;background:transparent;padding:15px 14px;border-radius:10px;cursor:pointer;
   font-size:.92rem;font-weight:600;letter-spacing:.02em;color:var(--testo);
   text-align:left;margin-bottom:4px;transition:background .15s,color .15s;
 }
-.tab:hover{background:rgba(255,255,255,.06)}
+.tab:hover,.nav-home:hover{background:rgba(255,255,255,.06)}
 .tab.attiva{background:var(--oro-soft);color:var(--oro);box-shadow:inset 3px 0 0 var(--oro)}
 
 /* ============================ LAYOUT ============================ */
