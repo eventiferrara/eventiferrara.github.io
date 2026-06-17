@@ -9,22 +9,33 @@
 </head>
 <body>
 
+  <button id="menu-toggle" class="hamburger" aria-label="Apri menu" aria-controls="drawer" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+
   <header class="topbar">
-    <h1>📅 Eventi Ferrara</h1>
-    <p class="sottotitolo">Calendario condiviso degli eventi in città — al servizio di albergatori e operatori turistici</p>
+    <img class="banner" src="assets/banner.png" alt="Calendario Eventi Ferrara" />
+    <h1>CALENDARIO EVENTI FERRARA</h1>
+    <p class="sottotitolo">Calendario condiviso degli eventi della città, al servizio degli operatori turistici</p>
   </header>
 
-  <nav class="tabs">
-    <button class="tab attiva" data-tab="inserisci">➕ Inserisci evento</button>
-    <button class="tab" data-tab="calendario">📆 Calendario eventi</button>
-    <button class="tab" data-tab="analisi">📊 Analisi presenze/evento</button>
-    <button class="tab" data-tab="admin">🔐 Amministratore</button>
+  <!-- menu laterale (hamburger) -->
+  <div id="overlay" class="overlay"></div>
+  <nav id="drawer" class="drawer" aria-label="Menu principale">
+    <div class="drawer-testa">
+      <span>Menu</span>
+      <button id="menu-chiudi" class="drawer-chiudi" aria-label="Chiudi menu">✕</button>
+    </div>
+    <button class="tab attiva" data-tab="calendario">📆 CALENDARIO EVENTI</button>
+    <button class="tab" data-tab="inserisci">➕ INSERISCI EVENTO</button>
+    <button class="tab" data-tab="analisi">📊 ANALISI PRESENZE/EVENTO</button>
+    <button class="tab" data-tab="admin">🔐 AMMINISTRATORE</button>
   </nav>
 
   <main>
 
     <!-- ============================ INSERISCI EVENTO ============================ -->
-    <section id="tab-inserisci" class="pannello attivo">
+    <section id="tab-inserisci" class="pannello">
       <h2>Inserisci un evento</h2>
       <p class="aiuto">Ogni operatore può arricchire il calendario con gli eventi che conosce. Compila i campi e salva.</p>
 
@@ -79,7 +90,7 @@
     </section>
 
     <!-- ============================ CALENDARIO ============================ -->
-    <section id="tab-calendario" class="pannello">
+    <section id="tab-calendario" class="pannello attivo">
       <h2>Calendario eventi</h2>
 
       <div class="filtri">

@@ -28,8 +28,23 @@ document.addEventListener("DOMContentLoaded", () => {
 // ---- Navigazione schede ------------------------------------------------------
 function initTabs(){
   document.querySelectorAll(".tab").forEach(btn => {
-    btn.addEventListener("click", () => mostraTab(btn.dataset.tab));
+    btn.addEventListener("click", () => { mostraTab(btn.dataset.tab); chiudiMenu(); });
   });
+  // menu hamburger
+  document.getElementById("menu-toggle").addEventListener("click", apriMenu);
+  document.getElementById("menu-chiudi").addEventListener("click", chiudiMenu);
+  document.getElementById("overlay").addEventListener("click", chiudiMenu);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") chiudiMenu(); });
+}
+function apriMenu(){
+  document.getElementById("drawer").classList.add("aperto");
+  document.getElementById("overlay").classList.add("aperto");
+  document.getElementById("menu-toggle").setAttribute("aria-expanded", "true");
+}
+function chiudiMenu(){
+  document.getElementById("drawer").classList.remove("aperto");
+  document.getElementById("overlay").classList.remove("aperto");
+  document.getElementById("menu-toggle").setAttribute("aria-expanded", "false");
 }
 function mostraTab(nome){
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("attiva", b.dataset.tab===nome));
