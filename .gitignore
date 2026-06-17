@@ -5,3 +5,5 @@ esempi/
 serviceAccount*.json
 firebase-service-account*.json
 *.local
+# impostazioni locali dell'assistente
+.claude/

@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Eventi Ferrara — Calendario per operatori turistici</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -13,10 +16,26 @@
     <span></span><span></span><span></span>
   </button>
 
-  <header class="topbar">
-    <img class="banner" src="assets/banner.png" alt="Calendario Eventi Ferrara" />
-    <h1>CALENDARIO EVENTI FERRARA</h1>
-    <p class="sottotitolo">Calendario condiviso degli eventi della città, al servizio degli operatori turistici</p>
+  <!-- ============================ HERO ============================ -->
+  <header class="hero">
+    <div class="hero-top">
+      <span class="wordmark">Ferrara&nbsp;·&nbsp;<strong>Città d'arte</strong></span>
+      <span class="hero-anno">CALENDARIO 2026</span>
+    </div>
+
+    <div class="hero-body">
+      <p class="eyebrow">Cosa succede in città</p>
+      <h1 class="hero-titolo">Gli eventi<br />di <em>Ferrara</em></h1>
+      <p class="hero-sub">Calendario condiviso degli eventi della città, al servizio degli operatori turistici.</p>
+
+      <div class="hero-filtri" id="cat-filtri">
+        <span class="filtra-label">Filtra</span>
+        <button class="cat attiva" data-cat="tutti">Tutti</button>
+        <button class="cat" data-cat="culturale_musicale">Culturale / Musicale</button>
+        <button class="cat" data-cat="congressuale_fieristico">Congressuale / Fieristico</button>
+        <button class="cat" data-cat="sportivo">Sportivo</button>
+      </div>
+    </div>
   </header>
 
   <!-- menu laterale (hamburger) -->

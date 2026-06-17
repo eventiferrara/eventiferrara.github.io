@@ -11,6 +11,7 @@ let EDIT_ID = null;     // se valorizzato, il form Inserisci aggiorna invece di 
 // ---- Avvio -------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
+  initCatFiltri();
   initInserisci();
   initCalendario();
   initAnalisi();
@@ -330,6 +331,19 @@ function mostraEsito(el, msg, ok){
 //  2) CALENDARIO EVENTI
 // ============================================================================
 let _calDa = null, _calA = null; // range attivo (null = prossimi eventi)
+let _calCat = "tutti";           // filtro tipologia attivo dalle pill della hero
+
+// Pill di filtro per tipologia nella hero (Tutti / Culturale / Congressuale / Sportivo)
+function initCatFiltri(){
+  const pills = document.querySelectorAll("#cat-filtri .cat");
+  pills.forEach(p => p.addEventListener("click", () => {
+    _calCat = p.dataset.cat || "tutti";
+    pills.forEach(x => x.classList.toggle("attiva", x === p));
+    mostraTab("calendario");   // mostra il calendario filtrato
+    chiudiMenu();
+    renderCalendario();
+  }));
+}
 
 function initCalendario(){
   document.getElementById("cal-cerca").addEventListener("click", () => {
@@ -352,6 +366,7 @@ function eventiPerGiorno(daIso, aIso){
   const mappa = {};
   EVENTI.forEach(ev => {
     if (!ev.dataInizio || !ev.dataFine) return;
+    if (_calCat !== "tutti" && ev.tipologia !== _calCat) return;
     const inizio = ev.dataInizio < daIso ? daIso : ev.dataInizio;
     const fine   = ev.dataFine   > aIso  ? aIso  : ev.dataFine;
     if (inizio > fine) return;
@@ -378,9 +393,12 @@ function renderCalendario(){
   const mappa = eventiPerGiorno(daIso, aIso);
   const giorni = intervalloDate(daIso, aIso);
 
+  // le festività compaiono solo col filtro "Tutti", non con una tipologia specifica
+  const mostraFest = _calCat === "tutti";
+
   // in modalità "prossimi" mostro solo i giorni con eventi o festività (per non avere righe vuote infinite)
   const soloPieni = !( _calDa && _calA );
-  const righe = giorni.filter(iso => !soloPieni || mappa[iso] || festivitaDi(iso));
+  const righe = giorni.filter(iso => !soloPieni || mappa[iso] || (mostraFest && festivitaDi(iso)));
 
   if (!righe.length){
     tbody.innerHTML = `<tr><td colspan="2" class="aiuto">Nessun evento nel periodo selezionato.</td></tr>`;
@@ -388,7 +406,7 @@ function renderCalendario(){
   }
 
   tbody.innerHTML = righe.map(iso => {
-    const fest = festivitaDi(iso);
+    const fest = mostraFest ? festivitaDi(iso) : null;
     const evs = (mappa[iso]||[]);
     const cellaEventi = [
       fest ? `<div class="ev-riga">🎉 <span class="ev-nome">${esc(fest)}</span></div>` : "",
