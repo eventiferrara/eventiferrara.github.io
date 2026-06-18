@@ -287,6 +287,8 @@ async function onSalvaEvento(e){
       await db.collection("eventi").doc(EDIT_ID).update(dato);
       mostraEsito(esito, "✓ Evento aggiornato.", true);
       annullaModifica();
+      mostraTab("admin");      // dopo la modifica torna all'area Amministratore
+      window.scrollTo(0, 0);
     } else {
       dato.origine = "operatore";
       dato.createdAt = firebase.firestore.FieldValue.serverTimestamp();
