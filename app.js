@@ -917,6 +917,70 @@ function initAdmin(){
   document.getElementById("carica-presenze").addEventListener("click", caricaFilePresenze);
   document.getElementById("carica-eventi").addEventListener("click", caricaFileEventi);
   document.getElementById("adm-filtro-eventi").addEventListener("input", aggiornaTabellaAdmin);
+  document.getElementById("cat-analizza").addEventListener("click", analizzaCategorie);
+}
+
+// ---- Assegnazione categorie agli eventi che ne sono sprovvisti ----------------
+// regole per nome: il primo gruppo di parole chiave che combacia decide la categoria
+const REGOLE_CAT = [
+  [["GRAN FONDO","STRA FERRARA","BIKE NIGHT","MILLE MIGLIA","QUARTO TEMPO","MARATONA","TORNEO","PADEL"], "sportivo"],
+  [["COSMOPROF","RESTAURO","REMTECH","CERSAIE","EIMA","WORK ON WORK","SANA","SAIE"], "congressuale_fieristico"],
+  [["ESCHER","SOTTO LE STELLE","SUMMER FESTIVAL","BUSKERS","INTERNAZIONALE","NOCTIS","FOOD FESTIVAL","MUSICFILM","RADIOHEAD","VASCO","PALIO","CONCERT"], "culturale_musicale"],
+];
+function categoriaSuggerita(nome){
+  const u = (nome || "").toUpperCase();
+  for (const [kws, cat] of REGOLE_CAT) if (kws.some(k => u.includes(k))) return cat;
+  return null;
+}
+
+let _propostaCat = [];
+function analizzaCategorie(){
+  const cont = document.getElementById("cat-anteprima");
+  const esito = document.getElementById("esito-categorie");
+  esito.textContent = ""; esito.className = "esito";
+  const senza = EVENTI.filter(ev => !(ev.tipologia || "").trim());
+  if (!senza.length){ cont.innerHTML = ""; return mostraEsito(esito, "Nessun evento senza categoria. ✓", true); }
+
+  _propostaCat = [];
+  const ignoti = [];
+  senza.forEach(ev => {
+    const c = categoriaSuggerita(ev.nome);
+    if (c) _propostaCat.push({ id: ev.id, nome: ev.nome, cat: c });
+    else if (!ignoti.includes(ev.nome)) ignoti.push(ev.nome);
+  });
+
+  const righe = _propostaCat
+    .map(p => `<tr><td>${esc(p.nome)}</td><td>${TIPOLOGIE[p.cat]}</td></tr>`).join("");
+  cont.innerHTML = `
+    <p class="aiuto">${_propostaCat.length} eventi verranno categorizzati${ignoti.length ? `; ${ignoti.length} non riconosciuti (lasciati invariati): ${ignoti.map(esc).join(", ")}` : ""}.</p>
+    <div class="tabella-wrap"><table class="tab-cat">
+      <thead><tr><th>Evento</th><th>Categoria proposta</th></tr></thead>
+      <tbody>${righe}</tbody></table></div>
+    ${_propostaCat.length ? `<button id="cat-applica" class="primario">✅ Applica ${_propostaCat.length} categorie</button>` : ""}`;
+  const btn = document.getElementById("cat-applica");
+  if (btn) btn.onclick = applicaCategorie;
+}
+
+async function applicaCategorie(){
+  const esito = document.getElementById("esito-categorie");
+  if (!_propostaCat.length) return;
+  const btn = document.getElementById("cat-applica");
+  if (btn) btn.disabled = true;
+  try{
+    let batch = db.batch(), n = 0;
+    for (const p of _propostaCat){
+      batch.update(db.collection("eventi").doc(p.id), { tipologia: p.cat });
+      if (++n % 400 === 0){ await batch.commit(); batch = db.batch(); }
+    }
+    await batch.commit();
+    mostraEsito(esito, `✓ Assegnate ${_propostaCat.length} categorie.`, true);
+    document.getElementById("cat-anteprima").innerHTML = "";
+    _propostaCat = [];
+  }catch(err){
+    console.error(err);
+    mostraEsito(esito, "Errore nel salvataggio: " + err.message, false);
+    if (btn) btn.disabled = false;
+  }
 }
 
 // ---- Import PRESENZE_YYYY (Excel/CSV) ----------------------------------------

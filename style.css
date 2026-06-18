@@ -265,6 +265,12 @@ tr.oggi td{box-shadow:inset 3px 0 0 var(--oro)}
 .gp-testa b{font-family:var(--serif);font-size:1.1rem;color:var(--testo)}
 .gp-chiudi{background:transparent;color:var(--testo-soft);font-size:1.05rem;padding:4px 8px}
 .gp-corpo .ev-riga{margin:9px 0}
+
+/* anteprima assegnazione categorie (admin) */
+#cat-anteprima{margin:12px 0}
+.tab-cat{width:100%;border-collapse:collapse;font-size:.9rem}
+.tab-cat th{text-align:left;color:var(--oro);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--bordo)}
+.tab-cat td{padding:8px 10px;border-bottom:1px solid var(--bordo);color:var(--testo)}
 tbody tr:hover{background:rgba(255,255,255,.03)}
 .ev-riga{display:flex;align-items:center;gap:7px;margin:3px 0}
 .ev-nome{font-weight:600;color:var(--testo)}
