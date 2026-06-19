@@ -193,7 +193,7 @@
       <!-- ANALISI 1 -->
       <div class="card-analisi">
         <h3>1 · Confronto con differenze giorno per giorno</h3>
-        <div class="riga2">
+        <div class="riga2" id="a1-box-A">
           <label>Periodo A — dal <input type="date" id="a1-da" /></label>
           <label>al <input type="date" id="a1-a" /></label>
         </div>
@@ -201,7 +201,7 @@
         <div class="scelta-confronto">
           <label><input type="radio" name="a1-modo" value="annoprec" checked /> Stesso periodo, anno precedente</label>
           <label><input type="radio" name="a1-modo" value="periodo" /> Confronta con un altro periodo</label>
-          <label><input type="radio" name="a1-modo" value="evento" /> Confronta con un evento</label>
+          <label><input type="radio" name="a1-modo" value="evento" /> Confronta con uno o più eventi</label>
         </div>
 
         <div id="a1-box-periodo" class="riga2">
@@ -210,10 +210,9 @@
         </div>
 
         <div id="a1-box-evento" class="nascosto">
-          <label>Cerca evento per nome
-            <input type="text" id="a1-evento-cerca" placeholder="Scrivi parte del nome…" />
-          </label>
-          <select id="a1-evento-lista" size="5" class="lista-eventi"></select>
+          <p class="aiuto">Cerca e seleziona gli eventi da confrontare. Usa ＋ per aggiungerne altri (le date vengono prese dalla scheda di ogni evento).</p>
+          <div id="a1-eventi-rows"></div>
+          <button type="button" id="a1-add-evento" class="secondario btn-add-evento">＋ Aggiungi evento</button>
         </div>
 
         <button id="a1-confronta" class="primario">📋 Confronta</button>

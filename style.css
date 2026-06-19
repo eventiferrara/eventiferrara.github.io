@@ -284,6 +284,13 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .scelta-confronto label{font-weight:500;color:var(--testo-soft)}
 .lista-eventi{width:100%;margin-top:6px}
 .risultato{margin-top:16px}
+
+/* scheda 1: righe per il confronto fra più eventi */
+.evento-riga{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.evento-cerca-wrap{flex:1;min-width:0}
+.rimuovi-evento{width:auto;flex:0 0 auto;padding:11px 16px;margin-top:6px;font-size:1.1rem;line-height:1}
+.btn-add-evento{width:auto;margin-top:2px}
+.tab-scroll{overflow-x:auto}
 .grafico-wrap{margin-top:16px;position:relative;height:364px;background:#fff;border:1px solid var(--bordo);border-radius:12px;padding:12px}
 .btn-ingrandisci{position:absolute;top:6px;right:6px;z-index:5;background:rgba(255,255,255,.92);color:#241c0c;border:1px solid var(--bordo);border-radius:8px;padding:6px 10px;font-size:1rem;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .btn-ingrandisci:hover{background:var(--oro);border-color:var(--oro)}

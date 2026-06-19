@@ -647,8 +647,9 @@ function initAnalisi(){
   ["a1","a2"].forEach(p => {
     document.querySelectorAll(`input[name=${p}-modo]`).forEach(r => r.addEventListener("change", () => aggiornaModo(p)));
     aggiornaModo(p);                                  // stato iniziale
-    attivaRicercaEvento(p+"-evento-cerca", p+"-evento-lista");
   });
+  attivaRicercaEvento("a2-evento-cerca", "a2-evento-lista");  // scheda 2: evento singolo
+  initEventiMulti("a1");                                      // scheda 1: confronto fra più eventi
   document.getElementById("a1-confronta").addEventListener("click", analisi1);
   document.getElementById("a2-confronta").addEventListener("click", analisi2);
 
@@ -688,19 +689,53 @@ function aggiornaModo(prefix){
   const modo = document.querySelector(`input[name=${prefix}-modo]:checked`).value;
   document.getElementById(prefix+"-box-evento").classList.toggle("nascosto", modo!=="evento");
   document.getElementById(prefix+"-box-periodo").classList.toggle("nascosto", modo!=="periodo");
+  // scheda 1: in modalità evento il Periodo A non serve (le date arrivano dagli eventi)
+  const boxA = document.getElementById(prefix+"-box-A");
+  if (boxA) boxA.classList.toggle("nascosto", modo==="evento");
 }
 
-// collega un campo di ricerca a una select, popolandola con eventi simili (Fuse.js)
-function attivaRicercaEvento(inputId, listaId){
-  document.getElementById(inputId).addEventListener("input", e => {
+// collega un input di ricerca a una select, popolandola con eventi simili (Fuse.js)
+function bindRicercaEvento(input, lista){
+  input.addEventListener("input", e => {
     const q = e.target.value.trim();
-    const lista = document.getElementById(listaId);
     if (q.length < 2){ lista.innerHTML = ""; return; }
     const fuse = new Fuse(EVENTI, { keys:["nome"], threshold:0.5, ignoreLocation:true });
     lista.innerHTML = fuse.search(q).slice(0,15).map(r => r.item).map(ev =>
       `<option value="${ev.id}">${esc(ev.nome)} — ${dataCompatta(ev.dataInizio)}–${dataCompatta(ev.dataFine)} (${ev.dataInizio.slice(0,4)})</option>`
     ).join("");
   });
+}
+function attivaRicercaEvento(inputId, listaId){
+  bindRicercaEvento(document.getElementById(inputId), document.getElementById(listaId));
+}
+
+// ---- Scheda 1: confronto fra più eventi (righe dinamiche con ＋ / −) ----------
+function initEventiMulti(prefix){
+  document.getElementById(prefix+"-add-evento").addEventListener("click", () => aggiungiRigaEvento(prefix));
+  aggiungiRigaEvento(prefix);   // prima riga sempre presente
+}
+function aggiungiRigaEvento(prefix){
+  const cont = document.getElementById(prefix+"-eventi-rows");
+  const riga = document.createElement("div");
+  riga.className = "evento-riga";
+  riga.innerHTML = `
+    <div class="evento-cerca-wrap">
+      <input type="text" class="ev-cerca" placeholder="Scrivi parte del nome…" />
+      <select class="ev-lista lista-eventi" size="5"></select>
+    </div>
+    <button type="button" class="rimuovi-evento secondario" title="Rimuovi evento">−</button>`;
+  cont.appendChild(riga);
+  bindRicercaEvento(riga.querySelector(".ev-cerca"), riga.querySelector(".ev-lista"));
+  riga.querySelector(".rimuovi-evento").addEventListener("click", () => {
+    riga.remove();
+    aggiornaRimuoviEvento(prefix);
+  });
+  aggiornaRimuoviEvento(prefix);
+}
+// il tasto − compare solo se c'è più di una riga (almeno un evento resta sempre)
+function aggiornaRimuoviEvento(prefix){
+  const righe = document.querySelectorAll(`#${prefix}-eventi-rows .evento-riga`);
+  righe.forEach(r => r.querySelector(".rimuovi-evento").style.visibility = righe.length>1 ? "visible" : "hidden");
 }
 
 // ricava il Periodo B in base alla modalità scelta; ritorna {daB,aB,etichetta} o {err}
@@ -722,6 +757,9 @@ function risolviPeriodoB(prefix, daA, aA){
 
 function analisi1(){
   const out = document.getElementById("a1-risultato");
+  const modo = document.querySelector(`input[name=a1-modo]:checked`).value;
+  if (modo === "evento") return analisi1Eventi(out);
+
   const daA = document.getElementById("a1-da").value, aA = document.getElementById("a1-a").value;
   if (!daA || !aA) return out.innerHTML = `<span class="esito err">Imposta il Periodo A.</span>`;
 
@@ -761,6 +799,49 @@ function analisi1(){
     <p class="aiuto">Le celle "—" indicano date senza dato presenze caricato (vedi sezione Amministratore).</p>`;
 }
 function fmt(v){ return v==null ? '<span class="ev-meta">—</span>' : v.toLocaleString('it-IT'); }
+
+// Confronto fra N eventi: presenze giorno per giorno, allineate per "giorno dell'evento".
+function analisi1Eventi(out){
+  const eventi = [];
+  document.querySelectorAll("#a1-eventi-rows .ev-lista").forEach(s => {
+    const ev = EVENTI.find(e => e.id === s.value);
+    if (ev) eventi.push(ev);
+  });
+  if (!eventi.length) return out.innerHTML = `<span class="esito err">Seleziona almeno un evento dalla lista.</span>`;
+
+  const giorni = eventi.map(ev => intervalloDate(ev.dataInizio, ev.dataFine));
+  const n = Math.max(...giorni.map(g => g.length));
+  const totali = eventi.map(() => 0);
+
+  let righe = "";
+  for (let i=0;i<n;i++){
+    let celle = `<td>${i+1}</td>`;
+    eventi.forEach((ev,k) => {
+      const d = giorni[k][i];
+      const p = d ? getPresenza(d) : null;
+      if (p!=null) totali[k]+=p;
+      celle += `<td>${d?dataEstesa(d):"—"}</td><td>${fmt(p)}</td>`;
+    });
+    righe += `<tr>${celle}</tr>`;
+  }
+
+  const thEventi = eventi.map(ev => `<th colspan="2">${esc(ev.nome)}</th>`).join("");
+  const thSub    = eventi.map(() => `<th>Data</th><th>Presenze</th>`).join("");
+  const tfTot    = totali.map(t => `<th></th><th>${t.toLocaleString('it-IT')}</th>`).join("");
+
+  out.innerHTML = `
+    <div class="tab-scroll">
+    <table class="tab-diff">
+      <thead>
+        <tr><th rowspan="2">Giorno</th>${thEventi}</tr>
+        <tr>${thSub}</tr>
+      </thead>
+      <tbody>${righe}</tbody>
+      <tfoot><tr><th>Totale</th>${tfTot}</tr></tfoot>
+    </table>
+    </div>
+    <p class="aiuto">Gli eventi sono allineati per giorno (Giorno 1 = primo giorno di ciascun evento). Le celle "—" indicano date senza dato presenze caricato.</p>`;
+}
 
 function analisi2(){
   const daA=document.getElementById("a2-da").value, aA=document.getElementById("a2-a").value;
