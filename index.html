@@ -247,7 +247,10 @@
         </div>
 
         <button id="a2-confronta" class="primario">📊 Genera istogramma</button>
-        <div class="grafico-wrap"><canvas id="a2-grafico"></canvas></div>
+        <div class="grafico-wrap" id="a2-wrap">
+          <button id="a2-ingrandisci" class="btn-ingrandisci" type="button" title="Ingrandisci il grafico" aria-label="Ingrandisci il grafico">⛶</button>
+          <canvas id="a2-grafico"></canvas>
+        </div>
       </div>
 
       <!-- ANALISI 3 — PATTERN SETTIMANALE -->
@@ -260,7 +263,10 @@
           </label>
           <button id="pat-mostra" class="primario">📈 Mostra pattern</button>
         </div>
-        <div class="grafico-wrap"><canvas id="pat-grafico"></canvas></div>
+        <div class="grafico-wrap" id="pat-wrap">
+          <button id="pat-ingrandisci" class="btn-ingrandisci" type="button" title="Ingrandisci il grafico" aria-label="Ingrandisci il grafico">⛶</button>
+          <canvas id="pat-grafico"></canvas>
+        </div>
         <p id="pat-nota" class="aiuto"></p>
       </div>
     </section>

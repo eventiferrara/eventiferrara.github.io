@@ -656,6 +656,30 @@ function initAnalisi(){
   sel.innerHTML = MESI_FULL.map((m,i) => `<option value="${i}">${m}</option>`).join("");
   sel.value = new Date().getMonth();
   document.getElementById("pat-mostra").addEventListener("click", patternSettimanale);
+
+  // tasto "ingrandisci" a tutto schermo per i grafici dell'area Analisi
+  abilitaIngrandisci("a2-wrap",  "a2-ingrandisci",  () => _graficoA2);
+  abilitaIngrandisci("pat-wrap", "pat-ingrandisci", () => _graficoPattern);
+}
+
+// Collega un tasto che espande/riduce un grafico in overlay a tutto schermo.
+// Overlay via CSS (e non Fullscreen API) per funzionare anche su iPhone/iPad.
+function abilitaIngrandisci(wrapId, btnId, getChart){
+  const wrap = document.getElementById(wrapId);
+  const btn  = document.getElementById(btnId);
+  if (!wrap || !btn) return;
+  const toggle = () => {
+    const espanso = wrap.classList.toggle("espanso");
+    document.body.classList.toggle("grafico-aperto", espanso);
+    btn.textContent = espanso ? "✕" : "⛶";
+    btn.title = espanso ? "Riduci il grafico" : "Ingrandisci il grafico";
+    const chart = getChart();
+    if (chart) chart.resize();
+  };
+  btn.addEventListener("click", toggle);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && wrap.classList.contains("espanso")) toggle();
+  });
 }
 
 // mostra/nasconde i box in base alla modalità scelta (annoprec nasconde entrambi)
