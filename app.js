@@ -698,11 +698,19 @@ function aggiornaModo(prefix){
 function bindRicercaEvento(input, lista){
   input.addEventListener("input", e => {
     const q = e.target.value.trim();
-    if (q.length < 2){ lista.innerHTML = ""; return; }
+    if (q.length < 2){ lista.innerHTML = ""; lista.classList.add("nascosto"); return; }
     const fuse = new Fuse(EVENTI, { keys:["nome"], threshold:0.5, ignoreLocation:true });
     lista.innerHTML = fuse.search(q).slice(0,15).map(r => r.item).map(ev =>
       `<option value="${ev.id}">${esc(ev.nome)} — ${dataCompatta(ev.dataInizio)}–${dataCompatta(ev.dataFine)} (${ev.dataInizio.slice(0,4)})</option>`
     ).join("");
+    lista.classList.remove("nascosto");
+  });
+  // scelto un evento: il nome prende il posto del testo digitato e la lista si chiude
+  lista.addEventListener("change", () => {
+    const ev = EVENTI.find(e => e.id === lista.value);
+    if (!ev) return;
+    input.value = ev.nome;
+    lista.classList.add("nascosto");
   });
 }
 function attivaRicercaEvento(inputId, listaId){
@@ -721,7 +729,7 @@ function aggiungiRigaEvento(prefix){
   riga.innerHTML = `
     <div class="evento-cerca-wrap">
       <input type="text" class="ev-cerca" placeholder="Scrivi parte del nome…" />
-      <select class="ev-lista lista-eventi" size="5"></select>
+      <select class="ev-lista lista-eventi nascosto" size="5"></select>
     </div>
     <button type="button" class="rimuovi-evento secondario" title="Rimuovi evento">−</button>`;
   cont.appendChild(riga);
