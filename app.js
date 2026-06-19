@@ -698,6 +698,7 @@ function aggiornaModo(prefix){
 function bindRicercaEvento(input, lista){
   input.addEventListener("input", e => {
     const q = e.target.value.trim();
+    input.classList.remove("evento-scelto");   // si torna a cercare: niente più conferma
     if (q.length < 2){ lista.innerHTML = ""; lista.classList.add("nascosto"); return; }
     const fuse = new Fuse(EVENTI, { keys:["nome"], threshold:0.5, ignoreLocation:true });
     lista.innerHTML = fuse.search(q).slice(0,15).map(r => r.item).map(ev =>
@@ -710,6 +711,7 @@ function bindRicercaEvento(input, lista){
     const ev = EVENTI.find(e => e.id === lista.value);
     if (!ev) return;
     input.value = ev.nome;
+    input.classList.add("evento-scelto");
     lista.classList.add("nascosto");
   });
 }

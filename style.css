@@ -288,6 +288,15 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 /* scheda 1: righe per il confronto fra più eventi */
 .evento-riga{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
 .evento-cerca-wrap{flex:1;min-width:0}
+/* campo con evento confermato: bordo verde + spunta */
+.evento-scelto{
+  border-color:var(--verde) !important;
+  padding-right:40px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234cc66a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  background-size:18px 18px;
+}
 .rimuovi-evento{width:auto;flex:0 0 auto;padding:11px 16px;margin-top:6px;font-size:1.1rem;line-height:1}
 .btn-add-evento{width:auto;margin-top:2px}
 .tab-scroll{overflow-x:auto}
