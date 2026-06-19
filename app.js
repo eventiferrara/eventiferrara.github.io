@@ -616,6 +616,7 @@ function aggiornaRiepilogoCal(nEventi, daIso, aIso){
 // ============================================================================
 let _graficoA2 = null;
 let _graficoPattern = null;
+let _patState = null;   // stato pattern settimanale: { perAnno, nSlot, anni, medianaIdx, mese }
 
 // Plugin Chart.js: fasce verticali grigio chiaro dietro sabato e domenica.
 // Gli slot dell'asse sono weekend quando indice%7 è 5 (Sab) o 6 (Dom).
@@ -860,18 +861,18 @@ function patternSettimanale(){
     };
   });
 
-  // mediana per slot (solo se ≥3 anni hanno il dato): la linea "pattern"
-  const medi = new Array(nSlot).fill(null);
-  for (let x=0; x<nSlot; x++){
-    const vals = anniConDati.map(a => perAnno[a][x]?.v).filter(v => v != null);
-    if (vals.length >= 3) medi[x] = mediana(vals);
-  }
+  // segnaposto per la linea mediana: i valori veri li calcola aggiornaPattern()
+  // in base agli anni effettivamente visibili (vedi onClick legenda).
+  const medianaIdx = datasets.length;
   datasets.push({
     label: "MEDIANA (pattern)",
-    data: medi, _date: null,
+    data: new Array(nSlot).fill(null), _date: null,
     borderColor: "#111", backgroundColor: "transparent",
     borderWidth: 4, pointRadius: 0, pointHoverRadius: 5, tension: 0.3, spanGaps: false, order: -1
   });
+
+  // stato condiviso con il ricalcolo dinamico della mediana
+  _patState = { perAnno, nSlot, anni: anniConDati, medianaIdx };
 
   if (_graficoPattern) _graficoPattern.destroy();
   _graficoPattern = new Chart(document.getElementById("pat-grafico"), {
@@ -882,7 +883,15 @@ function patternSettimanale(){
       responsive: true, maintainAspectRatio: false,
       interaction: { mode: "nearest", intersect: false },
       plugins: {
-        legend: { position: "top", labels: { boxWidth: 12, font: { size: 10 } } },
+        legend: { position: "top", labels: { boxWidth: 12, font: { size: 10 } },
+          // mostra/nascondi una linea e ricalcola la mediana sugli anni rimasti visibili
+          onClick: (e, item, legend) => {
+            const ci = legend.chart;
+            if (ci.isDatasetVisible(item.datasetIndex)) ci.hide(item.datasetIndex);
+            else ci.show(item.datasetIndex);
+            aggiornaPatternMediana(ci);
+          }
+        },
         tooltip: { callbacks: { label: (it) => {
           const ds = it.dataset, v = it.parsed.y;
           if (v == null) return null;
@@ -898,12 +907,39 @@ function patternSettimanale(){
     }
   });
 
+  aggiornaPatternMediana(_graficoPattern);   // primo calcolo (tutti gli anni visibili)
+}
+
+// Ricalcola la linea mediana usando SOLO gli anni attualmente visibili sul
+// grafico (quelli non nascosti dalla legenda) e aggiorna la nota esplicativa.
+function aggiornaPatternMediana(chart){
+  if (!_patState) return;
+  const { perAnno, nSlot, anni, medianaIdx } = _patState;
+
+  const visibili = anni.filter((a, i) => chart.isDatasetVisible(i));
+  const medi = new Array(nSlot).fill(null);
+  if (visibili.length >= 2){
+    for (let x=0; x<nSlot; x++){
+      const vals = visibili.map(a => perAnno[a][x]?.v).filter(v => v != null);
+      if (vals.length >= 2) medi[x] = mediana(vals);
+    }
+  }
+  chart.data.datasets[medianaIdx].data = medi;
+  chart.update();
+
+  const nota = document.getElementById("pat-nota");
+  const base = `Le fasce grigie evidenziano <b>sabato</b> (chiaro) e <b>domenica</b> (più scuro). `;
+  if (visibili.length < 2){
+    nota.innerHTML = base
+      + `<span class="ev-meta">Mostra almeno 2 anni (clicca sulla legenda) per tracciare la mediana.</span>`;
+    return;
+  }
   const nMed = medi.filter(v => v != null).length;
-  nota.innerHTML = `Le fasce grigie evidenziano <b>sabato</b> (chiaro) e <b>domenica</b> (più scuro). `
-    + `La linea spessa è la <b>mediana</b> di ${anniConDati.length} anni `
-    + `(${anniConDati[0]}–${anniConDati[anniConDati.length-1]}): il pattern "tipico" dei giorni della settimana. `
-    + `Festività mobili (Pasqua) ed eventi straordinari (congressi) spostano i singoli anni — la mediana li attenua ma non li annulla.`
-    + (nMed < nSlot ? ` <span class="ev-meta">(la mediana è tracciata solo dove almeno 3 anni hanno il dato)</span>` : "");
+  nota.innerHTML = base
+    + `La linea spessa è la <b>mediana</b> di ${visibili.length} anni `
+    + `(${visibili.join(", ")}): il pattern "tipico" dei giorni della settimana. `
+    + `Clicca un anno nella legenda per escluderlo: la mediana si ricalcola sugli anni mostrati. `
+    + (nMed < nSlot ? `<span class="ev-meta">(tracciata solo dove almeno 2 anni mostrati hanno il dato)</span>` : "");
 }
 
 function mediana(arr){
