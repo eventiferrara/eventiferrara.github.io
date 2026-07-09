@@ -84,7 +84,38 @@ function ascoltaEventi(){
     aggiornaDatalistNomi();
     aggiornaVistaCalendario();
     aggiornaTabellaAdmin();
+    aggiornaStatStrip();
   }, err => console.error("Errore lettura eventi:", err));
+}
+
+// riquadro numerico a cavallo tra hero e contenuto (home)
+function aggiornaStatStrip(){
+  const elMese = document.getElementById("stat-eventi-mese");
+  const elProssimo = document.getElementById("stat-prossimo");
+  const elAffluenza = document.getElementById("stat-affluenza");
+  if (!elMese || !elProssimo || !elAffluenza) return;
+
+  const oggi = oggiISO();
+  const meseCorrente = oggi.slice(0,7); // "YYYY-MM"
+
+  const eventiMese = EVENTI.filter(e =>
+    e.dataInizio && e.dataFine && e.dataInizio.slice(0,7) <= meseCorrente && e.dataFine.slice(0,7) >= meseCorrente
+  ).length;
+  elMese.textContent = eventiMese;
+
+  const prossimo = EVENTI.find(e => e.dataFine >= oggi);
+  if (!prossimo){
+    elProssimo.textContent = "—";
+    elAffluenza.textContent = "—";
+    return;
+  }
+  if (prossimo.dataInizio <= oggi){
+    elProssimo.textContent = "In corso";
+  } else {
+    const giorni = intervalloDate(oggi, prossimo.dataInizio).length - 1;
+    elProssimo.textContent = giorni === 1 ? "1 giorno" : giorni + " giorni";
+  }
+  elAffluenza.textContent = prossimo.previsione ? PREVISIONI[prossimo.previsione].label : "—";
 }
 
 async function caricaPresenze(){

@@ -40,10 +40,10 @@ body{
 /* ============================ HERO ============================ */
 .hero{
   position:relative;
-  min-height:92vh;
+  min-height:64vh;
   display:flex;
   flex-direction:column;
-  padding:26px clamp(22px,6vw,84px) clamp(40px,8vh,90px);
+  padding:26px clamp(22px,6vw,84px) clamp(72px,11vh,110px);
   background-color:#0c1626;
   background-image:url("assets/IMG_1411.webp");
   background-size:cover;
@@ -108,6 +108,29 @@ body{
 .cat:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.32)}
 .cat.attiva{
   background:var(--oro);border-color:var(--oro);color:#241c0c;font-weight:600;
+}
+
+/* ============================ STAT STRIP ============================ */
+/* a cavallo tra hero e contenuto: rende visibile da subito che sotto c'è altro */
+.stat-strip-wrap{
+  max-width:1000px;margin:0 auto;padding:0 clamp(18px,5vw,28px);
+  position:relative;
+}
+.stat-strip{
+  position:relative;margin-top:clamp(-56px,-7vh,-40px);
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--bordo-forte);border:1px solid var(--bordo-forte);
+  border-radius:14px;overflow:hidden;box-shadow:var(--ombra);
+}
+.stat{background:var(--card-2);padding:16px 20px}
+.stat-num{
+  display:block;font-family:var(--serif);font-weight:600;
+  font-size:clamp(1.15rem,2.6vw,1.5rem);color:var(--oro-chiaro);line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.stat-lbl{
+  display:block;margin-top:6px;font-size:.68rem;color:var(--testo-soft);
+  letter-spacing:.08em;text-transform:uppercase;
 }
 
 /* ============================ HAMBURGER + DRAWER ============================ */
@@ -323,10 +346,13 @@ footer{text-align:center;color:var(--testo-debole);padding:26px;font-size:.8rem;
 /* ============================ RESPONSIVE ============================ */
 @media(max-width:560px){
   .riga2{flex-direction:column;gap:0}
-  .hero{min-height:88vh}
+  .hero{min-height:60vh}
   .hero-anno{display:none}
   .hero-filtri{gap:8px}
   .cat{padding:9px 16px;font-size:.88rem}
+  .stat-strip{grid-template-columns:1fr 1fr;margin-top:-34px}
+  .stat-strip .stat:last-child{grid-column:1 / -1}
+  .stat{padding:13px 16px}
   .m-cell{min-height:72px;padding:5px 5px;gap:2px}
   .m-num{font-size:.76rem}
   .m-ev{font-size:.64rem}
