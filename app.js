@@ -41,29 +41,13 @@ if ("serviceWorker" in navigator) {
 // ---- Navigazione schede ------------------------------------------------------
 function initTabs(){
   document.querySelectorAll(".tab").forEach(btn => {
-    btn.addEventListener("click", () => { mostraTab(btn.dataset.tab); chiudiMenu(); });
+    btn.addEventListener("click", () => mostraTab(btn.dataset.tab));
   });
   // voce HOME: torna in cima all'hero e mostra il calendario
   document.getElementById("nav-home").addEventListener("click", () => {
     mostraTab("calendario");
-    chiudiMenu();
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
-  // menu hamburger
-  document.getElementById("menu-toggle").addEventListener("click", apriMenu);
-  document.getElementById("menu-chiudi").addEventListener("click", chiudiMenu);
-  document.getElementById("overlay").addEventListener("click", chiudiMenu);
-  document.addEventListener("keydown", e => { if (e.key === "Escape") chiudiMenu(); });
-}
-function apriMenu(){
-  document.getElementById("drawer").classList.add("aperto");
-  document.getElementById("overlay").classList.add("aperto");
-  document.getElementById("menu-toggle").setAttribute("aria-expanded", "true");
-}
-function chiudiMenu(){
-  document.getElementById("drawer").classList.remove("aperto");
-  document.getElementById("overlay").classList.remove("aperto");
-  document.getElementById("menu-toggle").setAttribute("aria-expanded", "false");
 }
 function mostraTab(nome){
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("attiva", b.dataset.tab===nome));
@@ -394,7 +378,6 @@ function initCatFiltri(){
     _calCat = p.dataset.cat || "tutti";
     pills.forEach(x => x.classList.toggle("attiva", x === p));
     mostraTab("calendario");   // mostra il calendario filtrato
-    chiudiMenu();
     aggiornaVistaCalendario();
   }));
 }
@@ -1090,6 +1073,11 @@ function initAdmin(){
     const logged = !!user;
     document.getElementById("admin-login").classList.toggle("nascosto", logged);
     document.getElementById("admin-pannello").classList.toggle("nascosto", !logged);
+    // tasto nav: LOGIN (lucchetto) se non autenticato, AMMINISTRATORE (persona) se admin
+    document.getElementById("nav-admin-label").textContent = logged ? "AMMINISTRATORE" : "LOGIN";
+    document.getElementById("nav-admin").title = logged ? "Area amministratore" : "Accesso amministratore";
+    document.getElementById("nav-admin-ic-lock").classList.toggle("nascosto", logged);
+    document.getElementById("nav-admin-ic-user").classList.toggle("nascosto", !logged);
     if (logged){
       document.getElementById("admin-chi").textContent = "Connesso come " + user.email;
       aggiornaTabellaAdmin();

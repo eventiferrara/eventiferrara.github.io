@@ -33,9 +33,30 @@
 </head>
 <body>
 
-  <button id="menu-toggle" class="hamburger" aria-label="Apri menu" aria-controls="drawer" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
+  <!-- ============================ NAV LATERALE ============================ -->
+  <nav class="nav-lato" aria-label="Menu principale">
+    <button class="navbtn" id="nav-home" title="Home">
+      <svg class="navbtn-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/></svg>
+      <span class="navbtn-lbl">HOME</span>
+    </button>
+    <button class="navbtn tab attiva" data-tab="calendario" title="Calendario eventi">
+      <svg class="navbtn-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="3.5" y1="9.5" x2="20.5" y2="9.5"/></svg>
+      <span class="navbtn-lbl">CALENDARIO EVENTI</span>
+    </button>
+    <button class="navbtn tab" data-tab="inserisci" title="Inserisci evento">
+      <svg class="navbtn-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><line x1="12" y1="8.3" x2="12" y2="15.7"/><line x1="8.3" y1="12" x2="15.7" y2="12"/></svg>
+      <span class="navbtn-lbl">INSERISCI EVENTO</span>
+    </button>
+    <button class="navbtn tab" data-tab="analisi" title="Analisi presenze/evento">
+      <svg class="navbtn-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+      <span class="navbtn-lbl">ANALISI</span>
+    </button>
+    <button class="navbtn tab" id="nav-admin" data-tab="admin" title="Accesso amministratore">
+      <svg class="navbtn-ic nascosto" id="nav-admin-ic-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.2" r="3.4"/><path d="M4.8 20c.8-4 3.7-6 7.2-6s6.4 2 7.2 6"/></svg>
+      <svg class="navbtn-ic" id="nav-admin-ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>
+      <span class="navbtn-lbl" id="nav-admin-label">LOGIN</span>
+    </button>
+  </nav>
 
   <!-- ============================ HERO ============================ -->
   <header class="hero">
@@ -76,20 +97,6 @@
       </div>
     </div>
   </div>
-
-  <!-- menu laterale (hamburger) -->
-  <div id="overlay" class="overlay"></div>
-  <nav id="drawer" class="drawer" aria-label="Menu principale">
-    <div class="drawer-testa">
-      <span>Menu</span>
-      <button id="menu-chiudi" class="drawer-chiudi" aria-label="Chiudi menu">✕</button>
-    </div>
-    <button class="nav-home" id="nav-home">🏠 HOME</button>
-    <button class="tab attiva" data-tab="calendario">📆 CALENDARIO EVENTI</button>
-    <button class="tab" data-tab="inserisci">➕ INSERISCI EVENTO</button>
-    <button class="tab" data-tab="analisi">📊 ANALISI PRESENZE/EVENTO</button>
-    <button class="tab" data-tab="admin">🔐 AMMINISTRATORE</button>
-  </nav>
 
   <main>
 
@@ -294,7 +301,7 @@
 
       <!-- login -->
       <div id="admin-login">
-        <p class="aiuto">Accesso riservato. Usa l'account amministratore (email e password).</p>
+        <p class="aiuto">Accesso amministratore. Inserisci email e password dell'account amministratore.</p>
         <form id="form-login">
           <label>Email <input type="email" id="adm-email" required /></label>
           <label>Password <input type="password" id="adm-password" required /></label>
