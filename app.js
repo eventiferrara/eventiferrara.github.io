@@ -383,6 +383,11 @@ function initCatFiltri(){
 }
 
 function initCalendario(){
+  document.getElementById("cal-da").addEventListener("change", () => {
+    const da = document.getElementById("cal-da").value;
+    const campoA = document.getElementById("cal-a");
+    if (da && (!campoA.value || campoA.value < da)) campoA.value = da;
+  });
   document.getElementById("cal-cerca").addEventListener("click", () => {
     _calDa = document.getElementById("cal-da").value || null;
     _calA  = document.getElementById("cal-a").value || null;
