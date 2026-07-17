@@ -69,7 +69,45 @@ function ascoltaEventi(){
     aggiornaVistaCalendario();
     aggiornaTabellaAdmin();
     aggiornaStatStrip();
+    renderGiornateTop();
   }, err => console.error("Errore lettura eventi:", err));
+}
+
+// Prime 10 date future (da oggi in poi) con più eventi in programma.
+// Indipendente dal filtro per tipologia: è un riepilogo sempre "su tutto".
+function renderGiornateTop(){
+  const cont = document.getElementById("giornate-top");
+  if (!cont) return;
+
+  const oggi = oggiISO();
+  const mappa = {}; // iso -> [eventi]
+  EVENTI.forEach(ev => {
+    if (!ev.dataInizio || !ev.dataFine) return;
+    const inizio = ev.dataInizio < oggi ? oggi : ev.dataInizio;
+    if (inizio > ev.dataFine) return;
+    intervalloDate(inizio, ev.dataFine).forEach(iso => {
+      (mappa[iso] = mappa[iso] || []).push(ev);
+    });
+  });
+
+  const top = Object.entries(mappa)
+    .sort((a,b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+    .slice(0, 5);
+
+  if (!top.length){
+    cont.innerHTML = `<p class="aiuto">Nessun evento in programma.</p>`;
+    return;
+  }
+
+  cont.innerHTML = top.map(([iso, evs]) => `
+    <div class="giorno-top-riga">
+      <div class="giorno-top-data">${dataLeggibile(iso)}${iso===oggi?` <span class="badge-oggi">oggi</span>`:""}</div>
+      <div class="giorno-top-conteggio">${evs.length} ${evs.length===1?"evento":"eventi"}</div>
+      <div class="giorno-top-eventi">${evs.map(rigaEventoHTML).join("")}</div>
+    </div>
+  `).join("");
+
+  cont.querySelectorAll(".ics").forEach(b => b.onclick = () => scaricaICS(b.dataset.id));
 }
 
 // riquadro numerico a cavallo tra hero e contenuto (home)

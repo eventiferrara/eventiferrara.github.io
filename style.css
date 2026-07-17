@@ -232,6 +232,21 @@ tr.oggi td{box-shadow:inset 3px 0 0 var(--oro)}
 .cal-riepilogo .ric-cat{color:var(--oro);font-weight:600}
 .cal-riepilogo b{color:var(--testo)}
 
+/* ---- giornate più affollate (home) ---- */
+.giornate-top-wrap{margin-top:34px}
+.giorno-top-riga{
+  display:grid;grid-template-columns:150px auto;column-gap:14px;row-gap:2px;
+  padding:12px 14px;border:1px solid var(--bordo);border-radius:14px;background:var(--card);
+  margin:0 0 10px;
+}
+.giorno-top-data{color:var(--testo-soft);font-weight:600;white-space:nowrap}
+.giorno-top-conteggio{grid-column:2;color:var(--oro);font-size:.78rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.giorno-top-eventi{grid-column:1/-1;margin-top:6px}
+@media(max-width:560px){
+  .giorno-top-riga{grid-template-columns:1fr}
+  .giorno-top-conteggio{grid-column:1}
+}
+
 /* ---- toggle Elenco / Mese ---- */
 .cal-toggle{display:inline-flex;gap:4px;background:var(--card);border:1px solid var(--bordo);border-radius:999px;padding:4px;margin:2px 0 14px}
 .cal-toggle .vbtn{background:transparent;color:var(--testo-soft);border:0;padding:9px 18px;border-radius:999px;font-weight:600;font-size:.88rem}
