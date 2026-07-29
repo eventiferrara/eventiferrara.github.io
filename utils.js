@@ -15,6 +15,13 @@ const PREVISIONI = {
   alto:  { label: "Alto",  colore: "#e0413a", emoji: "🔴" }
 };
 
+// Etichetta letta da un file importato: la tiene solo se è un valore ammesso,
+// altrimenti "" (meglio nessuna etichetta che una etichetta inventata).
+function normEtichetta(v, ammessi){
+  const s = String(v||"").trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(ammessi, s) ? s : "";
+}
+
 // Soglie (in % di "lift" sulle presenze) per la previsione storica calcolata.
 // Calibrate sui ~terzili della distribuzione dei lift degli eventi 2025.
 const SOGLIE_PREVISIONE = { basso: -8, alto: 10 };

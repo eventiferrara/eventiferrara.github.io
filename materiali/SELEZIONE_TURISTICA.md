@@ -44,5 +44,10 @@ Ogni evento ha due etichette, coerenti con lo schema della webapp:
 
 ## Come caricarli nel calendario
 Il file `eventi_turistici_2026.csv` ha colonne: `dataInizio, dataFine, nome, tipologia, previsione, note`.
-L'importer admin attuale (`caricaFileEventi`) legge solo data + nome e ignora `tipologia`/`previsione`.
-Per caricare anche le etichette serve una piccola estensione dell'importer (lettura colonne 3 e 4), oppure un caricamento diretto. Da concordare prima di scrivere su Firebase.
+L'importer admin (`caricaFileEventi`) legge tutto il tracciato: date di inizio e fine, nome, tipologia e previsione. La colonna `note` non viene importata.
+
+Le etichette vengono accettate solo se corrispondono ai valori del form (`culturale_musicale`, `congressuale_fieristico`, `sportivo` — `basso`, `medio`, `alto`); qualunque altro valore viene scartato lasciando l'etichetta vuota, così non entrano categorie inventate.
+
+Resta valido il tracciato ridotto a due colonne (`data, nome`): l'importer riconosce quale dei due sta leggendo dalla seconda cella (se è una data, il file è esteso).
+
+Il caricamento su Firebase resta comunque da concordare prima di eseguirlo.

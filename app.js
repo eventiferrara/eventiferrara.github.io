@@ -1245,9 +1245,22 @@ async function caricaFileEventi(){
     } else {
       const righe = await leggiFoglio(file);
       righe.forEach(r => {
-        const iso = parseDataCella(r[0]);
-        const nome = maiuscolo(String(r[1]||"").trim());
-        if (iso && nome) nuovi.push({ dataInizio:iso, dataFine:iso, nome });
+        const inizio = parseDataCella(r[0]);
+        if (!inizio) return;
+        // due tracciati accettati:
+        //   esteso  -> dataInizio | dataFine | nome | tipologia | previsione | note
+        //   ridotto -> data | nome
+        // li distingue la seconda cella: se e' una data, il file e' esteso.
+        const fine = parseDataCella(r[1]);
+        const nome = maiuscolo(String((fine ? r[2] : r[1])||"").trim());
+        if (!nome) return;
+        nuovi.push({
+          dataInizio: inizio,
+          dataFine: fine || inizio,
+          nome,
+          tipologia: fine ? normEtichetta(r[3], TIPOLOGIE) : "",
+          previsione: fine ? normEtichetta(r[4], PREVISIONI) : ""
+        });
       });
     }
     if(!nuovi.length) throw new Error("Nessun evento riconosciuto nel file.");
@@ -1273,8 +1286,9 @@ async function leggiFoglio(file){
   const wb = XLSX.read(buf, { type:"array", cellDates:true });
   const ws = wb.Sheets[wb.SheetNames[0]];
   const righe = XLSX.utils.sheet_to_json(ws, { header:1, raw:true, defval:"" });
-  // se la prima riga sembra un'intestazione (seconda cella non numerica), scartala
-  if (righe.length && isNaN(Number(righe[0][1])) && !(righe[0][0] instanceof Date)) righe.shift();
+  // se la prima cella non è una data, la riga è un'intestazione: scartala
+  // (il controllo sul numerico scartava la prima riga dei file senza intestazione)
+  if (righe.length && !parseDataCella(righe[0][0])) righe.shift();
   return righe.filter(r => r.length && (r[0]!==""));
 }
 
