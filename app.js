@@ -73,7 +73,7 @@ function ascoltaEventi(){
   }, err => console.error("Errore lettura eventi:", err));
 }
 
-// Prime 10 date future (da oggi in poi) con più eventi in programma.
+// Prime 3 date future (da oggi in poi) con più eventi in programma.
 // Indipendente dal filtro per tipologia: è un riepilogo sempre "su tutto".
 function renderGiornateTop(){
   const cont = document.getElementById("giornate-top");
@@ -92,7 +92,7 @@ function renderGiornateTop(){
 
   const top = Object.entries(mappa)
     .sort((a,b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
-    .slice(0, 5);
+    .slice(0, 3);
 
   if (!top.length){
     cont.innerHTML = `<p class="aiuto">Nessun evento in programma.</p>`;
