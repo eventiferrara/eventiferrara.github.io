@@ -28,9 +28,17 @@ def main():
 
     nostri = set(carica(nostri_path, []))
     remoti = set(carica(destinazione, []))
-    snapshot = carica(snapshot_path, {})
 
-    notificati = sorted((nostri | remoti) & set(snapshot))
+    # snapshot.json e' {"eventi": {id: ...}, "presenze": {...}}: gli id stanno
+    # dentro "eventi", non al primo livello. Se manca o e' illeggibile NON si
+    # pota, altrimenti si azzererebbe l'elenco e il run successivo rimanderebbe
+    # tutte le notifiche da capo.
+    eventi = carica(snapshot_path, {}).get("eventi")
+    if not eventi:
+        print("ATTENZIONE: snapshot.json senza eventi, salto la potatura.")
+        notificati = sorted(nostri | remoti)
+    else:
+        notificati = sorted((nostri | remoti) & set(eventi))
 
     os.makedirs(os.path.dirname(destinazione) or ".", exist_ok=True)
     with open(destinazione, "w", encoding="utf-8") as f:
