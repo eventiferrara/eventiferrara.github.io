@@ -4,6 +4,11 @@ name: Snapshot + notifica eventi
 # come negli altri progetti (allerta-vento, scadenze). C'è anche un cron di riserva.
 on:
   workflow_dispatch:
+    inputs:
+      pulizia_canale:
+        description: "Svuota il canale Telegram (solo messaggi delle ultime 48 ore)"
+        type: boolean
+        default: false
   schedule:
     - cron: "*/30 * * * *"   # riserva: ogni 30 min (lo schedule di GitHub può ritardare)
 
@@ -28,7 +33,17 @@ jobs:
       - name: Installa dipendenze
         run: pip install -r requirements.txt
 
+      # Pulsante manuale: svuota il canale e salta il resto del giro, cosi' la
+      # pulizia non fa da preludio a un invio di notifiche nello stesso run.
+      - name: Svuota il canale Telegram
+        if: inputs.pulizia_canale
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python pulizia_canale.py
+
       - name: Snapshot + notifica
+        if: ${{ !inputs.pulizia_canale }}
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -36,6 +51,7 @@ jobs:
         run: python notifica_telegram.py
 
       - name: Commit snapshot/stato se cambiati
+        if: ${{ !inputs.pulizia_canale }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
