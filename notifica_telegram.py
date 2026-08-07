@@ -16,7 +16,7 @@
 #    TELEGRAM_CHAT_ID          -> id/username del canale (es. @EVENTIFERRARA)
 # ============================================================================
 
-import os, json, sys
+import os, json, sys, time
 from datetime import date
 import urllib.request, urllib.parse
 
@@ -26,6 +26,10 @@ from firebase_admin import credentials, firestore
 DATA_DIR   = os.path.join(os.path.dirname(__file__), "data")
 SNAPSHOT   = os.path.join(DATA_DIR, "snapshot.json")
 NOTIFICATI = os.path.join(DATA_DIR, "notificati.json")
+
+# Freno agli invii: Telegram accetta circa 20 messaggi al minuto su un canale.
+MAX_INVII_PER_RUN = 10   # oltre questo, gli eventi escono ai giri successivi
+PAUSA_TRA_INVII   = 3.0  # secondi fra un messaggio e il successivo
 
 MESI = ["", "gen", "feb", "mar", "apr", "mag", "giu",
         "lug", "ago", "set", "ott", "nov", "dic"]
@@ -145,6 +149,18 @@ def main():
         ev = eventi[eid]
         futuro = ev.get("dataFine") or ev.get("dataInizio") or ""
         if futuro >= oggi:
+            # Tetto per run: se lo stato si perde, il canale non viene inondato.
+            # Il 7 agosto 2026 notificati.json e' finito vuoto e sono partiti 20
+            # messaggi in pochi secondi (altri 32 respinti con HTTP 429). Gli
+            # eventi oltre il tetto restano NON marcati e escono al giro dopo.
+            if inviati >= MAX_INVII_PER_RUN:
+                print(
+                    f"Tetto di {MAX_INVII_PER_RUN} invii raggiunto: i restanti "
+                    f"escono ai giri successivi."
+                )
+                break
+            if inviati:
+                time.sleep(PAUSA_TRA_INVII)  # Telegram accetta ~20 msg/min su un canale
             try:
                 invia_telegram(messaggio_evento(ev))
                 inviati += 1
