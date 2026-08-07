@@ -39,11 +39,47 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
-          if git diff --cached --quiet; then
+
+          if git diff --quiet -- data/; then
             echo "Nessuna modifica da committare."
-          else
-            git commit -m "snapshot dati $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git pull --rebase origin ${GITHUB_REF_NAME} || true
-            git push
+            exit 0
           fi
+
+          # Il push puo' essere rifiutato quando un altro run ha pubblicato nel
+          # frattempo: lo schedule di GitHub e il dispatch di cron-job.org a
+          # volte partono a pochi secondi di distanza. Prima qui c'era
+          # `git pull --rebase || true`: al primo conflitto su data/ il rebase
+          # si fermava, il repo restava in detached HEAD e il push moriva con
+          # exit 128 (successo il 7 agosto 2026). Ora a ogni tentativo si
+          # riparte da origin e si ri-applicano i nostri file.
+          nostri=$(mktemp -d)
+          cp data/snapshot.json data/notificati.json "$nostri"/
+
+          for tentativo in 1 2 3; do
+            git fetch --quiet origin "$GITHUB_REF_NAME"
+            git reset --quiet --hard "origin/$GITHUB_REF_NAME"
+
+            # snapshot.json e' una fotografia dell'ora: vince sempre la nostra,
+            # che e' la piu' recente. notificati.json invece e' cumulativo e va
+            # UNITO al remoto, altrimenti gli eventi segnati dall'altro run
+            # tornerebbero "nuovi" e la notifica partirebbe due volte.
+            mkdir -p data
+            cp "$nostri/snapshot.json" data/snapshot.json
+            python unisci_notificati.py \
+              "$nostri/notificati.json" "$nostri/snapshot.json" data/notificati.json
+
+            git add data/
+            if git diff --cached --quiet; then
+              echo "Nessuna modifica da committare."
+              exit 0
+            fi
+            git commit --quiet -m "snapshot dati $(date -u +'%Y-%m-%d %H:%M UTC')"
+            if git push; then
+              exit 0
+            fi
+            echo "Push rifiutato (tentativo $tentativo di 3): riprovo fra 5 secondi."
+            sleep 5
+          done
+
+          echo "::error::Push dello snapshot fallito dopo 3 tentativi."
+          exit 1
