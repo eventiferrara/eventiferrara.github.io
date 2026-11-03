@@ -137,7 +137,8 @@ function aggiornaStatStrip(){
     const giorni = intervalloDate(oggi, prossimo.dataInizio).length - 1;
     elProssimo.textContent = giorni === 1 ? "1 giorno" : giorni + " giorni";
   }
-  elAffluenza.textContent = prossimo.previsione ? PREVISIONI[prossimo.previsione].label : "—";
+  const prevProssimo = previsioneValida(prossimo.previsione);
+  elAffluenza.textContent = prevProssimo ? PREVISIONI[prevProssimo].label : "—";
 }
 
 async function caricaPresenze(){
@@ -459,10 +460,13 @@ function eventiPerGiorno(daIso, aIso){
 
 // HTML di una riga evento (usata da elenco e dal dettaglio giorno della vista mese)
 function rigaEventoHTML(ev){
+  // previsione e tipologia arrivano da Firestore (scrivibile dal pubblico): solo valori ammessi
+  const prev = previsioneValida(ev.previsione);
+  const tipo = etichettaTipologia(ev.tipologia);
   return `<div class="ev-riga">
-    ${ev.previsione ? `<span class="pallino ${ev.previsione}" title="presenze: ${PREVISIONI[ev.previsione]?.label||""}"></span>` : ""}
+    ${prev ? `<span class="pallino ${prev}" title="presenze: ${PREVISIONI[prev].label}"></span>` : ""}
     <span class="ev-nome">${esc(ev.nome)}</span>
-    <span class="ev-meta">${ev.tipologia?("· "+TIPOLOGIE[ev.tipologia]):""}${ev.struttura?(" · "+esc(ev.struttura)):""}</span>
+    <span class="ev-meta">${tipo?("· "+tipo):""}${ev.struttura?(" · "+esc(ev.struttura)):""}</span>
     <button class="ics" data-id="${esc(ev.id)}" title="Aggiungi al mio calendario" aria-label="Aggiungi al mio calendario">📅 +</button>
   </div>`;
 }
@@ -529,8 +533,8 @@ function scaricaICS(id){
   const soloData = iso => iso.replace(/-/g, "");
   const escIcs = s => String(s || "").replace(/\\/g, "\\\\").replace(/[;,]/g, m => "\\" + m).replace(/\n/g, "\\n");
   const descr = [
-    ev.tipologia  ? "Tipologia: " + TIPOLOGIE[ev.tipologia] : "",
-    ev.previsione ? "Presenze attese: " + (PREVISIONI[ev.previsione]?.label || ev.previsione) : "",
+    etichettaTipologia(ev.tipologia) ? "Tipologia: " + etichettaTipologia(ev.tipologia) : "",
+    previsioneValida(ev.previsione) ? "Presenze attese: " + PREVISIONI[previsioneValida(ev.previsione)].label : "",
     ev.struttura  ? "Inserito da: " + ev.struttura : ""
   ].filter(Boolean).join("\\n");
   const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
@@ -759,7 +763,7 @@ function bindRicercaEvento(input, lista){
     if (q.length < 2){ lista.innerHTML = ""; lista.classList.add("nascosto"); return; }
     const fuse = new Fuse(EVENTI, { keys:["nome"], threshold:0.5, ignoreLocation:true });
     lista.innerHTML = fuse.search(q).slice(0,15).map(r => r.item).map(ev =>
-      `<option value="${ev.id}">${esc(ev.nome)} — ${dataCompatta(ev.dataInizio)}–${dataCompatta(ev.dataFine)} (${ev.dataInizio.slice(0,4)})</option>`
+      `<option value="${esc(ev.id)}">${esc(ev.nome)} — ${dataCompatta(ev.dataInizio)}–${dataCompatta(ev.dataFine)} (${ev.dataInizio.slice(0,4)})</option>`
     ).join("");
     lista.classList.remove("nascosto");
   });
@@ -1340,12 +1344,12 @@ function aggiornaTabellaAdmin(){
     <tr>
       <td>${dataCompatta(ev.dataInizio)}–${dataCompatta(ev.dataFine)}</td>
       <td>${esc(ev.nome)}</td>
-      <td>${ev.tipologia?TIPOLOGIE[ev.tipologia]:"—"}</td>
-      <td>${ev.previsione?(PREVISIONI[ev.previsione].emoji):"—"}</td>
+      <td>${etichettaTipologia(ev.tipologia) || "—"}</td>
+      <td>${previsioneValida(ev.previsione) ? PREVISIONI[previsioneValida(ev.previsione)].emoji : "—"}</td>
       <td>${esc(ev.struttura||"")}</td>
       <td>
-        <button class="modifica" data-id="${ev.id}">✏️</button>
-        <button class="elimina" data-id="${ev.id}">🗑️</button>
+        <button class="modifica" data-id="${esc(ev.id)}">✏️</button>
+        <button class="elimina" data-id="${esc(ev.id)}">🗑️</button>
       </td>
     </tr>`).join("") || `<tr><td colspan="6" class="aiuto">Nessun evento.</td></tr>`;
 

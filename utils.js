@@ -15,6 +15,16 @@ const PREVISIONI = {
   alto:  { label: "Alto",  colore: "#e0413a", emoji: "🔴" }
 };
 
+// Lookup sicuri per valori letti da Firestore (campi scrivibili dal pubblico):
+// accettano solo le chiavi ammesse, mai quelle ereditate ("constructor"...) né testo
+// libero che finirebbe in un attributo HTML.
+function previsioneValida(v){
+  return Object.prototype.hasOwnProperty.call(PREVISIONI, v) ? v : "";
+}
+function etichettaTipologia(v){
+  return Object.prototype.hasOwnProperty.call(TIPOLOGIE, v) ? TIPOLOGIE[v] : "";
+}
+
 // Etichetta letta da un file importato: la tiene solo se è un valore ammesso,
 // altrimenti "" (meglio nessuna etichetta che una etichetta inventata).
 function normEtichetta(v, ammessi){

@@ -91,10 +91,10 @@ OPERATORI (pubblico)                          ADMIN = Zeno (login)
   barre di colore diverso per intervallo).
 
 ### 4) AMMINISTRATORE (solo Zeno)
-- Accesso protetto. **Sicurezza**: invece della sola password "adminZENO" scritta nel
+- Accesso protetto. **Sicurezza**: invece di una password scritta nel
   codice (aggirabile da chiunque ispezioni il JS), si usa **Firebase Auth (email/password,
   solo il tuo account)** — più robusto e necessario per proteggere davvero i dati con le
-  Security Rules. La password la scegli tu (può essere adminZENO).
+  Security Rules. La password deve essere lunga e unica (password manager).
 - **Upload `PRESENZE_YYYY.xlsx`**: due colonne (data | presenze, tutti i giorni dell'anno).
   Letto con SheetJS, **sovrascrive** `presenze/{YYYY}` e salva il file originale in Storage
   (stesso nome = sovrascrittura) per ripristino.

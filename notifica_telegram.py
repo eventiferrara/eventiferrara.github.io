@@ -16,7 +16,7 @@
 #    TELEGRAM_CHAT_ID          -> id/username del canale (es. @EVENTIFERRARA)
 # ============================================================================
 
-import os, json, sys, time
+import os, json, sys, time, html
 from datetime import date
 import urllib.request, urllib.parse
 
@@ -88,16 +88,22 @@ def invia_telegram(testo):
         r.read()
 
 
+def esc(v):
+    """Escape per parse_mode=HTML di Telegram. I campi dell'evento li scrive
+    chiunque (inserimento pubblico): senza escape un <a href> finirebbe nel canale."""
+    return html.escape(str(v), quote=False)
+
+
 def messaggio_evento(ev):
     righe = ["🆕 <b>NUOVO EVENTO A FERRARA</b>", "",
-             f"<b>{ev.get('nome','')}</b>",
-             f"📅 {periodo(ev)}"]
+             f"<b>{esc(ev.get('nome',''))}</b>",
+             f"📅 {esc(periodo(ev))}"]
     if ev.get("tipologia"):
-        righe.append(f"🏷️ {TIPI.get(ev['tipologia'], ev['tipologia'])}")
+        righe.append(f"🏷️ {esc(TIPI.get(ev['tipologia'], ev['tipologia']))}")
     if ev.get("previsione"):
-        righe.append(f"👥 Previsione presenze: {PREV.get(ev['previsione'], ev['previsione'])}")
+        righe.append(f"👥 Previsione presenze: {esc(PREV.get(ev['previsione'], ev['previsione']))}")
     if ev.get("struttura"):
-        righe.append(f"🏨 segnalato da: {ev['struttura']}")
+        righe.append(f"🏨 segnalato da: {esc(ev['struttura'])}")
     return "\n".join(righe)
 
 

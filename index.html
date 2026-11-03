@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- CSP: difesa in profondità contro l'injection di HTML/JS (GitHub Pages non permette header propri).
+       Niente 'unsafe-inline' per gli script: i gestori inline iniettati non partono. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com; frame-src https://eventi-ferrara.firebaseapp.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <title>Eventi Ferrara — Calendario eventi della città</title>
   <meta name="description" content="Calendario condiviso degli eventi di Ferrara — concerti, mostre, fiere, congressi e sport — con previsione delle presenze turistiche. Uno strumento gratuito per albergatori e operatori turistici." />
   <meta name="theme-color" content="#0d1726" />

@@ -14,22 +14,31 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == 'dcpdJI6DB2TReOjEorr5EWER8na2';
     }
 
-    // validazione minima di un evento inserito dal pubblico
+    // validazione di un evento inserito dal pubblico: SOLO questi campi (gli stessi che
+    // invia il form di app.js), valori da elenco chiuso, date ISO, lunghezze limitate.
+    // I valori finiscono in pagine viste da tutti: niente testo libero dove non serve.
     function eventoValido(d) {
-      return d.dataInizio is string
-        && d.dataFine is string
+      return d.keys().hasOnly(['dataInizio','dataFine','nome','tipologia','previsione','struttura','origine','createdAt'])
+        && d.keys().hasAll(['dataInizio','dataFine','nome','tipologia','previsione','struttura','origine','createdAt'])
+        && d.dataInizio is string && d.dataInizio.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.dataFine is string && d.dataFine.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && d.dataInizio <= d.dataFine
         && d.nome is string && d.nome.size() > 0 && d.nome.size() <= 200
         && d.struttura is string && d.struttura.size() <= 120
-        && d.tipologia is string
-        && d.previsione is string;
+        && d.tipologia in ['', 'culturale_musicale', 'congressuale_fieristico', 'sportivo']
+        && d.previsione in ['', 'basso', 'medio', 'alto']
+        && d.origine == 'operatore'
+        && d.createdAt == request.time;
     }
 
     // EVENTI: lettura pubblica, creazione pubblica (validata),
     //         modifica/eliminazione solo admin.
     match /eventi/{id} {
       allow read:   if true;
-      allow create: if eventoValido(request.resource.data);
+      // admin: import da file e modifiche senza i vincoli del pubblico.
+      // pubblico: ID generato dal client (20 caratteri alfanumerici) + evento valido.
+      allow create: if isAdmin()
+        || (id.matches('^[A-Za-z0-9]{20}$') && eventoValido(request.resource.data));
       allow update, delete: if isAdmin();
     }
 

@@ -47,7 +47,7 @@ PIANO.md                      il piano approvato
 1. Vai su <https://console.firebase.google.com> → **Aggiungi progetto** (es. `eventi-ferrara`).
 2. **Build → Firestore Database → Crea database** (modalità produzione, regione europea es. `eur3`).
 3. **Build → Authentication → Inizia → Email/Password** (abilita). Poi scheda **Users →
-   Aggiungi utente**: crea il TUO account admin (email + password a scelta, anche `adminZENO`).
+   Aggiungi utente**: crea il TUO account admin (email + password lunga e unica, generata da un password manager).
    Copia il suo **UID utente**.
 4. **Impostazioni progetto (⚙️) → Le tue app → App web (</>)**: registra un'app e copia
    l'oggetto `firebaseConfig`.
